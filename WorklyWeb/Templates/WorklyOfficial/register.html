@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORKLY - Registrarse</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .register-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .register-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .workly-brand {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .btn-workly {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+            width: 100%;
+        }
+        .btn-workly:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            color: white;
+        }
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .login-link {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .login-link:hover {
+            color: #5a6fd8;
+            text-decoration: underline;
+        }
+        .divider {
+            border-top: 2px solid #e9ecef;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        .divider-text {
+            background: white;
+            padding: 0 1rem;
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="register-card">
+                    <!-- Header -->
+                    <div class="register-header">
+                        <h1 class="workly-brand">🚀 WORKLY</h1>
+                        <p class="mb-0 mt-2">Registrarse</p>
+                    </div>
+                    
+                    <!-- Register Form -->
+                    <div class="p-4">
+                        <form>
+                            <!-- Email Field -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-semibold">Correo</label>
+                                <input type="email" class="form-control form-control-lg" id="email" placeholder="tu@correo.com" required>
+                            </div>
+                            
+                            <!-- Password Field -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label fw-semibold">Contraseña</label>
+                                <input type="password" class="form-control form-control-lg" id="password" placeholder="••••••••" required>
+                                <div class="form-text">Mínimo 8 caracteres</div>
+                            </div>
+                            
+                            <!-- Confirm Password Field -->
+                            <div class="mb-4">
+                                <label for="confirm-password" class="form-label fw-semibold">Confirmar contraseña</label>
+                                <input type="password" class="form-control form-control-lg" id="confirm-password" placeholder="••••••••" required>
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="divider">
+                                <span class="divider-text">o</span>
+                            </div>
+                            
+                            <!-- Register Button -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-workly btn-lg">Registrarse</button>
+                            </div>
+                            
+                            <!-- Login Link -->
+                            <div class="text-center">
+                                <p class="mb-0">
+                                    ¿Ya tienes una cuenta? 
+                                    <a href="{% url 'login' %}" class="login-link">Iniciar sesión</a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Validación de contraseñas -->
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert('Las contraseñas no coinciden. Por favor, verifica.');
+                return false;
+            }
+            
+            if (password.length < 8) {
+                e.preventDefault();
+                alert('La contraseña debe tener al menos 8 caracteres.');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

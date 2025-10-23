@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORKLY - Iniciar Sesión</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .workly-brand {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+        .btn-workly {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            padding: 12px;
+            font-weight: 600;
+        }
+        .btn-workly:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            color: white;
+        }
+        .demo-notice {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="login-card">
+                    <div class="login-header">
+                        <h1 class="workly-brand">🚀 WORKLY</h1>
+                        <p class="mb-0 mt-2">Bienvenido - Iniciar Sesión</p>
+                    </div>
+                    
+                    <div class="p-4">
+                        <!-- Demo Notice -->
+                        <div class="demo-notice">
+                            🔧 <strong>Modo Prueba:</strong> Cualquier email/contraseña funciona
+                        </div>
+
+                        <form method="POST">
+                            {% csrf_token %}
+                            
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <label for="email" class="form-label fw-semibold">Correo</label>
+                                <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="tu@correo.com" required>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="password" class="form-label fw-semibold">Contraseña</label>
+                                <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="••••••••" required>
+                            </div>
+                            
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-workly btn-lg">Iniciar Sesión</button>
+                            </div>
+                            
+                            <div class="text-center">
+                                <p class="mb-0">
+                                    ¿No tienes una cuenta? 
+                                    <a href="{% url 'register' %}" class="register-link">Regístrate</a>
+                                </p>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

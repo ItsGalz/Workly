@@ -7,47 +7,75 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         .login-card {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
             overflow: hidden;
+            border: 1px solid #e9ecef;
         }
         .login-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
             color: white;
             padding: 2rem;
             text-align: center;
         }
         .workly-brand {
-            font-size: 2.5rem;
+            font-size: 2.2rem;
             font-weight: bold;
             margin: 0;
         }
         .btn-workly {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
             border: none;
             color: white;
             padding: 12px;
             font-weight: 600;
+            transition: all 0.3s ease;
         }
         .btn-workly:hover {
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            background: linear-gradient(135deg, #34495e 0%, #2980b9 100%);
             color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+        }
+        .form-control {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
         }
         .demo-notice {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 5px;
-            padding: 10px;
+            background: #e3f2fd;
+            border: 1px solid #bbdefb;
+            border-radius: 8px;
+            padding: 12px;
             margin-bottom: 20px;
             text-align: center;
             font-size: 0.9rem;
+            color: #1565c0;
+        }
+        .register-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .register-link:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+        .alert {
+            border-radius: 8px;
         }
     </style>
 </head>
@@ -58,45 +86,42 @@
                 <div class="login-card">
                     <div class="login-header">
                         <h1 class="workly-brand">🚀 WORKLY</h1>
-                        <p class="mb-0 mt-2">Bienvenido - Iniciar Sesión</p>
+                        <p class="mb-0 mt-2">Acceso Profesional</p>
                     </div>
                     
                     <div class="p-4">
                         <!-- Demo Notice -->
                         <div class="demo-notice">
-                            🔧 <strong>Modo Prueba:</strong> Cualquier email/contraseña funciona
+                            🔐 <strong>Acceso al Sistema:</strong> Use sus credenciales registradas
                         </div>
 
-                        <form method="POST">
-                            {% csrf_token %}
-                            
-                            {% if messages %}
-                                {% for message in messages %}
-                                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                        {{ message }}
-                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
+                        <form id="loginForm">
+                            <!-- Mensajes de error/success -->
+                            <div id="messageContainer"></div>
                             
                             <div class="mb-3">
-                                <label for="email" class="form-label fw-semibold">Correo</label>
-                                <input type="email" class="form-control form-control-lg" id="email" name="email" placeholder="tu@correo.com" required>
+                                <label for="correo_electronico" class="form-label fw-semibold">Correo Electrónico</label>
+                                <input type="email" class="form-control form-control-lg" id="correo_electronico" name="correo_electronico" 
+                                       placeholder="tu.correo@ejemplo.com" required autofocus>
                             </div>
                             
                             <div class="mb-4">
                                 <label for="password" class="form-label fw-semibold">Contraseña</label>
-                                <input type="password" class="form-control form-control-lg" id="password" name="password" placeholder="••••••••" required>
+                                <input type="password" class="form-control form-control-lg" id="password" name="password" 
+                                       placeholder="Ingresa tu contraseña" required>
                             </div>
                             
                             <div class="d-grid mb-3">
-                                <button type="submit" class="btn btn-workly btn-lg">Iniciar Sesión</button>
+                                <button type="submit" class="btn btn-workly btn-lg" id="loginBtn">
+                                    <span class="spinner-border spinner-border-sm me-2 d-none" id="spinner"></span>
+                                    Iniciar Sesión
+                                </button>
                             </div>
                             
                             <div class="text-center">
-                                <p class="mb-0">
+                                <p class="mb-0 text-muted">
                                     ¿No tienes una cuenta? 
-                                    <a href="{% url 'register' %}" class="register-link">Regístrate</a>
+                                    <a href="/register/" class="register-link">Crear cuenta</a>
                                 </p>
                             </div>
                         </form>
@@ -105,5 +130,140 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // URLs CONFIGURADAS SEGÚN TU SETUP
+        const BACKEND_URL = 'http://127.0.0.1:8001';  // Backend Coconut
+        const FRONTEND_URL = 'http://127.0.0.1:8000'; // Frontend Workly
+        
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const loginBtn = document.getElementById('loginBtn');
+            const spinner = document.getElementById('spinner');
+            const messageContainer = document.getElementById('messageContainer');
+            
+            // Mostrar spinner
+            loginBtn.disabled = true;
+            spinner.classList.remove('d-none');
+            
+            // Limpiar mensajes anteriores
+            messageContainer.innerHTML = '';
+            
+            const formData = {
+                correo_electronico: document.getElementById('correo_electronico').value,
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/login/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Login exitoso - guardar tokens
+                    localStorage.setItem('access_token', data.access);
+                    localStorage.setItem('refresh_token', data.refresh);
+                    
+                    // Intentar obtener información del usuario
+                    try {
+                        const userResponse = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${data.access}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (userResponse.ok) {
+                            const userData = await userResponse.json();
+                            localStorage.setItem('user_data', JSON.stringify(userData));
+                        }
+                    } catch (userError) {
+                        console.log('No se pudo obtener info del usuario:', userError);
+                    }
+                    
+                    // Mostrar mensaje de éxito
+                    messageContainer.innerHTML = `
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            ✅ <strong>Éxito:</strong> Inicio de sesión correcto. Redirigiendo...
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                    
+                    // Redirigir a la página principal CORREGIDA
+                    setTimeout(() => {
+                        window.location.href = `${FRONTEND_URL}/`;
+                    }, 1500);
+                    
+                } else {
+                    // Error de login
+                    let errorMessage = 'Credenciales incorrectas';
+                    if (data.detail) {
+                        errorMessage = data.detail;
+                    } else if (data.error) {
+                        errorMessage = data.error;
+                    } else if (data.non_field_errors) {
+                        errorMessage = data.non_field_errors[0];
+                    }
+                    
+                    messageContainer.innerHTML = `
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            ❌ <strong>Error:</strong> ${errorMessage}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                messageContainer.innerHTML = `
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        ❌ <strong>Error:</strong> No se pudo conectar con el servidor. Verifique que el backend esté ejecutándose.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+            } finally {
+                // Ocultar spinner
+                loginBtn.disabled = false;
+                spinner.classList.add('d-none');
+            }
+        });
+
+        // Verificar si ya está autenticado CORREGIDO
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('access_token');
+            if (token) {
+                // Si ya tiene token, redirigir al home CORREGIDO
+                window.location.href = `${FRONTEND_URL}/`;
+            }
+        });
+
+        // Función global para hacer requests autenticados (útil para otras páginas)
+        window.authFetch = function(url, options = {}) {
+            const token = localStorage.getItem('access_token');
+            return fetch(`${BACKEND_URL}${url}`, {
+                ...options,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...options.headers,
+                }
+            });
+        };
+
+        // Función para obtener datos del usuario logueado
+        window.getCurrentUser = function() {
+            const userData = localStorage.getItem('user_data');
+            return userData ? JSON.parse(userData) : null;
+        };
+    </script>
 </body>
 </html>

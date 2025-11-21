@@ -58,3 +58,6 @@ def logout_view(request):
     """Cerrar sesión (simulado)"""
     messages.info(request, 'Has cerrado sesión (Modo prueba)')
     return redirect('login')
+
+def profile_view(request):
+    return render(request, 'profile.html')

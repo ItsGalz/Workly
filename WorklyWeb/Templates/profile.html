@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORKLY - Mi Perfil</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-brand { font-weight: bold; font-size: 1.5rem; color: #2c3e50 !important; }
+        .profile-card { background: white; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border: 1px solid #e9ecef; }
+        .profile-header { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: white; padding: 2rem; border-radius: 12px 12px 0 0; }
+        .profile-avatar { width: 100px; height: 100px; background: #3498db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; margin: 0 auto 1rem; border: 4px solid white; }
+        .info-label { font-weight: 600; color: #2c3e50; margin-bottom: 0.5rem; }
+        .info-value { color: #6c757d; margin-bottom: 1.5rem; padding: 0.5rem 0; border-bottom: 1px solid #e9ecef; }
+        .btn-workly { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); border: none; color: white; font-weight: 500; }
+        .btn-workly:hover { background: linear-gradient(135deg, #34495e 0%, #2980b9 100%); color: white; }
+        .user-welcome { color: #2c3e50; font-weight: 500; }
+        .empty-field { color: #6c757d; font-style: italic; }
+        .edit-input { 
+            width: 100%; 
+            border: 1px solid #ced4da; 
+            border-radius: 4px; 
+            padding: 8px; 
+            font-size: 1rem;
+        }
+        .edit-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+            outline: none;
+        }
+        .edit-textarea {
+            width: 100%;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            padding: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div class="container">
+            <a class="navbar-brand" href="/">🚀 WORKLY</a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3 user-welcome" id="userWelcome">Cargando...</span>
+                <div id="authButtons">
+                    <a href="/login/" class="btn btn-workly btn-sm me-2">Iniciar Sesión</a>
+                    <a href="/register/" class="btn btn-outline-dark btn-sm">Registrarse</a>
+                </div>
+                <div id="userMenu" style="display: none;">
+                    <a href="/profile/" class="btn btn-outline-primary btn-sm me-2">Mi Perfil</a>
+                    <button class="btn btn-outline-dark btn-sm" onclick="logout()">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="profile-card">
+                    <div class="profile-header text-center">
+                        <div class="profile-avatar">👤</div>
+                        <h2 id="profileName">Mi Perfil</h2>
+                        <p class="mb-0">Gestiona tu información personal</p>
+                    </div>
+                    <div class="p-4">
+                        <!-- Información del Usuario -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-label">Nombre completo</div>
+                                <div class="info-value" id="userFullName">
+                                    <span class="empty-field">Cargando...</span>
+                                </div>
+                                <input type="text" class="edit-input d-none" id="editFullName" placeholder="Ingresa tu nombre completo">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-label">Tipo de Usuario</div>
+                                <div class="info-value" id="userType">
+                                    <span class="empty-field">Cargando...</span>
+                                </div>
+                                <select class="edit-input d-none" id="editUserType">
+                                    <option value="talento_humano">Talento Humano</option>
+                                    <option value="empresa">Empresa</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-label">Correo electrónico</div>
+                                <div class="info-value" id="userEmail">
+                                    <span class="empty-field">Cargando...</span>
+                                </div>
+                                <input type="email" class="edit-input d-none" id="editEmail" placeholder="Ingresa tu correo electrónico">
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-label">Teléfono de contacto</div>
+                                <div class="info-value" id="userPhone">
+                                    <span class="empty-field">Cargando...</span>
+                                </div>
+                                <input type="tel" class="edit-input d-none" id="editPhone" placeholder="Ingresa tu teléfono">
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="info-label">Descripción del perfil</div>
+                                <div class="info-value" id="userDescription" style="min-height: 80px;">
+                                    <span class="empty-field">Cargando...</span>
+                                </div>
+                                <textarea class="edit-textarea d-none" id="editDescription" placeholder="Describe tu perfil profesional..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button class="btn btn-outline-secondary" onclick="goBack()" id="backBtn">
+                                        ← Volver al Inicio
+                                    </button>
+                                    <button class="btn btn-workly" onclick="toggleEditMode()" id="editBtn">
+                                        ✏️ Editar Perfil
+                                    </button>
+                                    <button class="btn btn-success d-none" onclick="saveProfile()" id="saveBtn">
+                                        💾 Guardar Cambios
+                                    </button>
+                                    <button class="btn btn-outline-danger d-none" onclick="cancelEdit()" id="cancelBtn">
+                                        ❌ Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de éxito -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">✅ Éxito</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="successMessage">Los cambios se han guardado correctamente.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>🚀 WORKLY</h5>
+                    <p class="text-muted">Tu plataforma de confianza para servicios profesionales</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="text-muted">&copy; 2024 WORKLY. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const BACKEND_URL = 'http://127.0.0.1:8001';
+        let originalUserData = null;
+        let isEditMode = false;
+
+        // Modales de Bootstrap
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+        });
+
+        // Verificar si el usuario está autenticado
+        async function checkAuthentication() {
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                window.location.href = "/login/";
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const responseData = await response.json();
+                const userData = responseData.data;
+                
+                localStorage.setItem('user_data', JSON.stringify(userData));
+                originalUserData = {...userData}; // Guardar copia para cancelar edición
+                showAuthenticatedUI();
+                displayUserProfile(userData);
+                
+            } catch (error) {
+                console.error('Error de autenticación:', error);
+                logout();
+            }
+        }
+
+        // Mostrar datos del perfil del usuario
+        function displayUserProfile(user) {
+            // Nombre completo
+            if (user && user.nombre_completo) {
+                document.getElementById('userFullName').textContent = user.nombre_completo;
+                document.getElementById('profileName').textContent = user.nombre_completo;
+                document.getElementById('editFullName').value = user.nombre_completo;
+            } else {
+                document.getElementById('userFullName').innerHTML = '<span class="empty-field">No especificado</span>';
+                document.getElementById('editFullName').value = '';
+            }
+
+            // Correo electrónico
+            if (user && user.correo_electronico) {
+                document.getElementById('userEmail').textContent = user.correo_electronico;
+                document.getElementById('editEmail').value = user.correo_electronico;
+            } else {
+                document.getElementById('userEmail').innerHTML = '<span class="empty-field">No especificado</span>';
+                document.getElementById('editEmail').value = '';
+            }
+
+            // Teléfono de contacto
+            if (user && user.telefono_contacto) {
+                document.getElementById('userPhone').textContent = user.telefono_contacto;
+                document.getElementById('editPhone').value = user.telefono_contacto;
+            } else {
+                document.getElementById('userPhone').innerHTML = '<span class="empty-field">No especificado</span>';
+                document.getElementById('editPhone').value = '';
+            }
+
+            // Tipo de usuario
+            if (user && user.tipo_usuario) {
+                let userTypeText = user.tipo_usuario;
+                if (user.tipo_usuario === 'talento_humano') {
+                    userTypeText = 'Talento Humano';
+                } else if (user.tipo_usuario === 'empresa') {
+                    userTypeText = 'Empresa';
+                }
+                document.getElementById('userType').textContent = userTypeText;
+                document.getElementById('editUserType').value = user.tipo_usuario;
+            } else {
+                document.getElementById('userType').innerHTML = '<span class="empty-field">No especificado</span>';
+                document.getElementById('editUserType').value = '';
+            }
+
+            // Descripción del perfil
+            if (user && user.descripcion_perfil) {
+                document.getElementById('userDescription').textContent = user.descripcion_perfil;
+                document.getElementById('editDescription').value = user.descripcion_perfil;
+            } else {
+                document.getElementById('userDescription').innerHTML = '<span class="empty-field">No hay descripción disponible</span>';
+                document.getElementById('editDescription').value = '';
+            }
+        }
+
+        // Alternar modo de edición
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            
+            if (isEditMode) {
+                // Entrar en modo edición
+                document.querySelectorAll('.info-value').forEach(el => el.classList.add('d-none'));
+                document.querySelectorAll('.edit-input, .edit-textarea').forEach(el => el.classList.remove('d-none'));
+                document.getElementById('editBtn').classList.add('d-none');
+                document.getElementById('saveBtn').classList.remove('d-none');
+                document.getElementById('cancelBtn').classList.remove('d-none');
+                document.getElementById('backBtn').classList.add('d-none');
+            } else {
+                // Salir del modo edición
+                cancelEdit();
+            }
+        }
+
+        // Cancelar edición
+        function cancelEdit() {
+            isEditMode = false;
+            document.querySelectorAll('.info-value').forEach(el => el.classList.remove('d-none'));
+            document.querySelectorAll('.edit-input, .edit-textarea').forEach(el => el.classList.add('d-none'));
+            document.getElementById('editBtn').classList.remove('d-none');
+            document.getElementById('saveBtn').classList.add('d-none');
+            document.getElementById('cancelBtn').classList.add('d-none');
+            document.getElementById('backBtn').classList.remove('d-none');
+            
+            // Restaurar datos originales
+            if (originalUserData) {
+                displayUserProfile(originalUserData);
+            }
+        }
+
+        // Guardar perfil
+       // Guardar perfil - MEJORADO CON MÁS DEBUG
+    // Guardar perfil - CORREGIDO PARA TIPO DE USUARIO
+    async function saveProfile() {
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+            alert('Error: No estás autenticado');
+            return;
+        }
+
+        // Preparar datos para enviar
+        const updatedData = {
+            nombre_completo: document.getElementById('editFullName').value.trim(),
+            correo_electronico: document.getElementById('editEmail').value.trim(),
+            telefono_contacto: document.getElementById('editPhone').value.trim(),
+            tipo_usuario: document.getElementById('editUserType').value,
+            descripcion_perfil: document.getElementById('editDescription').value.trim()
+        };
+
+        console.log('📤 Enviando datos actualizados:', updatedData);
+        console.log('🎯 Tipo de usuario seleccionado:', updatedData.tipo_usuario);
+
+        try {
+            // PRIMERO: Intentar con PUT
+            let response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            console.log('📨 PUT Response status:', response.status);
+
+            // SEGUNDO: Si PUT falla, intentar con PATCH
+            if (!response.ok) {
+                console.log('🔄 PUT falló, intentando con PATCH...');
+                response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+                console.log('📨 PATCH Response status:', response.status);
+            }
+
+            // TERCERO: Si ambos fallan, intentar endpoint alternativo
+            if (!response.ok) {
+                console.log('🔄 Endpoint principal falló, intentando endpoint alternativo...');
+                response = await fetch(`${BACKEND_URL}/usuarios/me/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+                console.log('📨 Alternativo Response status:', response.status);
+            }
+
+            if (response.ok) {
+                const responseData = await response.json();
+                console.log('✅ Datos guardados correctamente:', responseData);
+                
+                const userData = responseData.data || responseData;
+                
+                // Actualizar datos locales
+                localStorage.setItem('user_data', JSON.stringify(userData));
+                originalUserData = {...userData};
+                
+                // Mostrar mensaje de éxito
+                document.getElementById('successMessage').textContent = 'Tu perfil se ha actualizado correctamente.';
+                successModal.show();
+                
+                // Salir del modo edición
+                cancelEdit();
+                
+                // Actualizar la interfaz
+                displayUserProfile(userData);
+                showAuthenticatedUI();
+                
+            } else {
+                // Obtener detalles del error
+                let errorMessage = 'Error al guardar los cambios';
+                let errorDetails = '';
+                
+                try {
+                    const errorData = await response.json();
+                    console.error('❌ Error response:', errorData);
+                    
+                    if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    } else if (errorData.error) {
+                        errorMessage = errorData.error;
+                    } else if (errorData.message) {
+                        errorMessage = errorData.message;
+                    }
+                    
+                    // Mostrar errores de campos específicos
+                    if (errorData.tipo_usuario) {
+                        errorDetails = `Tipo de usuario: ${errorData.tipo_usuario.join(', ')}`;
+                    } else if (errorData.errors && errorData.errors.tipo_usuario) {
+                        errorDetails = `Tipo de usuario: ${errorData.errors.tipo_usuario.join(', ')}`;
+                    }
+                    
+                } catch (parseError) {
+                    console.error('Error parsing error response:', parseError);
+                    errorMessage = `Error ${response.status}: ${response.statusText}`;
+                }
+                
+                throw new Error(errorMessage + (errorDetails ? '\n' + errorDetails : ''));
+            }
+            
+        } catch (error) {
+            console.error('❌ Error guardando perfil:', error);
+            
+            // Manejo específico de errores de tipo de usuario
+            if (error.message.includes('tipo_usuario') || error.message.includes('tipo de usuario')) {
+                alert('❌ No se puede cambiar el tipo de usuario. Esta opción puede estar restringida.');
+            } else if (error.message.includes('Failed to fetch')) {
+                alert('❌ Error de conexión: No se pudo conectar con el servidor.');
+            } else {
+                alert('❌ Error al guardar los cambios:\n' + error.message);
+            }
+        }
+    }
+
+    // Función para probar solo el cambio de tipo de usuario
+    async function testTipoUsuarioChange() {
+        const token = localStorage.getItem('access_token');
+        if (!token) return;
+
+        const currentUser = JSON.parse(localStorage.getItem('user_data') || '{}');
+        const newTipoUsuario = currentUser.tipo_usuario === 'empresa' ? 'talento_humano' : 'empresa';
+        
+        console.log('🧪 Probando cambio de tipo de usuario:', newTipoUsuario);
+        
+        try {
+            const response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ tipo_usuario: newTipoUsuario })
+            });
+
+            console.log('🧪 Test Response:', response.status, response.ok);
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log('🧪 Test Success:', result);
+                alert('✅ Tipo de usuario se puede cambiar');
+            } else {
+                const error = await response.json();
+                console.log('🧪 Test Error:', error);
+                alert('❌ Tipo de usuario NO se puede cambiar: ' + (error.detail || error.message || 'Desconocido'));
+            }
+        } catch (error) {
+            console.error('🧪 Test Exception:', error);
+        }
+    }
+
+        // Mostrar interfaz para usuarios autenticados
+        function showAuthenticatedUI() {
+            const userData = localStorage.getItem('user_data');
+            let userName = 'Usuario';
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    userName = user.nombre_completo || user.correo_electronico || 'Usuario';
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            }
+            
+            document.getElementById('userWelcome').textContent = `👋 Bienvenido, ${userName}`;
+            document.getElementById('authButtons').style.display = 'none';
+            document.getElementById('userMenu').style.display = 'flex';
+        }
+
+        // Función para volver al inicio
+        function goBack() {
+            window.location.href = "/";
+        }
+
+        // Función para cerrar sesión
+        function logout() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user_data');
+            window.location.href = "/logout/";
+        }
+    </script>
+</body>
+</html>

@@ -12,12 +12,15 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
+            padding: 2rem 0;
         }
         .register-card {
             background: white;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             overflow: hidden;
+            max-width: 800px;
+            margin: 0 auto;
         }
         .register-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -70,49 +73,156 @@
             color: #6c757d;
             font-size: 0.9rem;
         }
+        .form-section {
+            margin-bottom: 2rem;
+        }
+        .section-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .day-schedule {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+        }
+        .day-header {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .time-input-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .time-input {
+            flex: 1;
+        }
+        .not-available-btn {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+        .schedule-active {
+            background: #e8f5e8;
+            border-color: #28a745;
+        }
+        .alert {
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
+            <div class="col-12">
                 <div class="register-card">
                     <!-- Header -->
                     <div class="register-header">
                         <h1 class="workly-brand">🚀 WORKLY</h1>
-                        <p class="mb-0 mt-2">Registrarse</p>
+                        <p class="mb-0 mt-2">Crear tu cuenta profesional</p>
                     </div>
                     
                     <!-- Register Form -->
                     <div class="p-4">
-                        <form>
-                            <!-- Email Field -->
-                            <div class="mb-3">
-                                <label for="email" class="form-label fw-semibold">Correo</label>
-                                <input type="email" class="form-control form-control-lg" id="email" placeholder="tu@correo.com" required>
-                            </div>
+                        <!-- Alertas -->
+                        <div id="successAlert" class="alert alert-success" role="alert">
+                            ¡Cuenta creada exitosamente! Redirigiendo...
+                        </div>
+                        <div id="errorAlert" class="alert alert-danger" role="alert">
+                            Error al crear la cuenta. Por favor, intenta nuevamente.
+                        </div>
+                        <div id="validationAlert" class="alert alert-warning" role="alert">
+                            Por favor, completa todos los campos requeridos correctamente.
+                        </div>
+
+                        <form id="registerForm">
+                            {% csrf_token %}
                             
-                            <!-- Password Field -->
-                            <div class="mb-3">
-                                <label for="password" class="form-label fw-semibold">Contraseña</label>
-                                <input type="password" class="form-control form-control-lg" id="password" placeholder="••••••••" required>
-                                <div class="form-text">Mínimo 8 caracteres</div>
+                            <!-- Información Básica -->
+                            <div class="form-section">
+                                <h4 class="section-title">Información Básica</h4>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="nombre_completo" class="form-label fw-semibold">Nombre completo *</label>
+                                        <input type="text" class="form-control" id="nombre_completo" name="nombre_completo" placeholder="Juan Pérez García" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="correo_electronico" class="form-label fw-semibold">Correo electrónico *</label>
+                                        <input type="email" class="form-control" id="correo_electronico" name="correo_electronico" placeholder="tu@correo.com" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="telefono_contacto" class="form-label fw-semibold">Teléfono de contacto</label>
+                                        <input type="tel" class="form-control" id="telefono_contacto" name="telefono_contacto" placeholder="+52 55 1234 5678">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="tipo_usuario" class="form-label fw-semibold">Tipo de usuario *</label>
+                                        <select class="form-select" id="tipo_usuario" name="tipo_usuario" required>
+                                            <option value="">Selecciona tu tipo</option>
+                                            <option value="talento_humano">Talento Humano</option>
+                                            <option value="empresa">Empresa</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                            
-                            <!-- Confirm Password Field -->
-                            <div class="mb-4">
-                                <label for="confirm-password" class="form-label fw-semibold">Confirmar contraseña</label>
-                                <input type="password" class="form-control form-control-lg" id="confirm-password" placeholder="••••••••" required>
+
+                            <!-- Descripción del Perfil -->
+                            <div class="form-section">
+                                <h4 class="section-title">Descripción del Perfil</h4>
+                                <div class="mb-3">
+                                    <label for="descripcion_perfil" class="form-label fw-semibold">Describe tu perfil profesional</label>
+                                    <textarea class="form-control" id="descripcion_perfil" name="descripcion_perfil" rows="4" placeholder="Ej: Desarrollador full-stack con 5 años de experiencia en JavaScript, Python y React. Especializado en aplicaciones web escalables..."></textarea>
+                                    <div class="form-text">Esta descripción aparecerá en tu perfil público.</div>
+                                </div>
+                            </div>
+
+                            <!-- Horarios de Atención -->
+                            <div class="form-section">
+                                <h4 class="section-title">Horarios de Atención</h4>
+                                <p class="text-muted mb-3">Selecciona tus horarios disponibles para contactos profesionales</p>
+                                
+                                <div id="horariosContainer">
+                                    <!-- Los horarios se generarán dinámicamente -->
+                                </div>
+                            </div>
+
+                            <!-- Contraseñas -->
+                            <div class="form-section">
+                                <h4 class="section-title">Seguridad</h4>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="password" class="form-label fw-semibold">Contraseña *</label>
+                                        <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+                                        <div class="form-text">Mínimo 8 caracteres</div>
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="confirm_password" class="form-label fw-semibold">Confirmar contraseña *</label>
+                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="••••••••" required>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Divider -->
                             <div class="divider">
-                                <span class="divider-text">o</span>
+                                <span class="divider-text">Listo para comenzar</span>
                             </div>
                             
                             <!-- Register Button -->
                             <div class="d-grid mb-3">
-                                <button type="submit" class="btn btn-workly btn-lg">Registrarse</button>
+                                <button type="submit" class="btn btn-workly btn-lg" id="submitBtn">
+                                    <span id="submitText">Crear Cuenta</span>
+                                    <div id="submitSpinner" class="spinner-border spinner-border-sm ms-2" role="status" style="display: none;">
+                                        <span class="visually-hidden">Cargando...</span>
+                                    </div>
+                                </button>
                             </div>
                             
                             <!-- Login Link -->
@@ -132,23 +242,250 @@
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Validación de contraseñas -->
+    <!-- JavaScript para horarios y conexión con backend -->
     <script>
-        document.querySelector('form').addEventListener('submit', function(e) {
+        const BACKEND_URL = 'http://127.0.0.1:8001';  // Tu backend
+
+        // Días de la semana
+        const daysOfWeek = [
+            { id: 'lunes', name: 'Lunes' },
+            { id: 'martes', name: 'Martes' },
+            { id: 'miercoles', name: 'Miércoles' },
+            { id: 'jueves', name: 'Jueves' },
+            { id: 'viernes', name: 'Viernes' },
+            { id: 'sabado', name: 'Sábado' },
+            { id: 'domingo', name: 'Domingo' }
+        ];
+
+        // Generar horarios dinámicamente
+        function generateScheduleFields() {
+            const container = document.getElementById('horariosContainer');
+            container.innerHTML = '';
+
+            daysOfWeek.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day-schedule schedule-active';
+                dayElement.innerHTML = `
+                    <div class="day-header">${day.name}</div>
+                    <div class="time-input-group">
+                        <div class="time-input">
+                            <label class="form-label small">Hora de inicio</label>
+                            <input type="time" class="form-control" id="${day.id}_start" name="${day.id}_start" value="09:00">
+                        </div>
+                        <div class="time-input">
+                            <label class="form-label small">Hora de fin</label>
+                            <input type="time" class="form-control" id="${day.id}_end" name="${day.id}_end" value="18:00">
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-secondary not-available-btn" onclick="toggleNotAvailable('${day.id}')">
+                        No disponible
+                    </button>
+                    <input type="hidden" id="${day.id}_available" name="${day.id}_available" value="true">
+                `;
+                container.appendChild(dayElement);
+            });
+        }
+
+        // Alternar disponibilidad
+        function toggleNotAvailable(dayId) {
+            const dayElement = document.querySelector(`#${dayId}_start`).closest('.day-schedule');
+            const startInput = document.getElementById(`${dayId}_start`);
+            const endInput = document.getElementById(`${dayId}_end`);
+            const availableInput = document.getElementById(`${dayId}_available`);
+            const button = dayElement.querySelector('.not-available-btn');
+
+            if (availableInput.value === 'true') {
+                // Marcar como no disponible
+                startInput.disabled = true;
+                endInput.disabled = true;
+                availableInput.value = 'false';
+                button.textContent = 'Marcar como disponible';
+                button.classList.remove('btn-outline-secondary');
+                button.classList.add('btn-outline-success');
+                dayElement.classList.remove('schedule-active');
+            } else {
+                // Marcar como disponible
+                startInput.disabled = false;
+                endInput.disabled = false;
+                availableInput.value = 'true';
+                button.textContent = 'No disponible';
+                button.classList.remove('btn-outline-success');
+                button.classList.add('btn-outline-secondary');
+                dayElement.classList.add('schedule-active');
+            }
+        }
+
+        // Preparar datos de horarios para enviar
+        function prepareScheduleData() {
+            const horarios = {};
+            
+            daysOfWeek.forEach(day => {
+                const available = document.getElementById(`${day.id}_available`).value === 'true';
+                
+                if (available) {
+                    const start = document.getElementById(`${day.id}_start`).value;
+                    const end = document.getElementById(`${day.id}_end`).value;
+                    horarios[day.id] = `${start}-${end}`;
+                } else {
+                    horarios[day.id] = 'No disponible';
+                }
+            });
+            
+            return horarios;
+        }
+
+        // Mostrar alerta
+        function showAlert(alertId, message = '') {
+            // Ocultar todas las alertas primero
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.style.display = 'none';
+            });
+            
+            const alert = document.getElementById(alertId);
+            if (message) {
+                alert.innerHTML = message;
+            }
+            alert.style.display = 'block';
+        }
+
+        // Validación del formulario
+        async function handleRegister(event) {
+            event.preventDefault();
+            
+            // Ocultar alertas previas
+            showAlert('successAlert');
+            showAlert('errorAlert');
+            showAlert('validationAlert');
+
             const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm-password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            const nombreCompleto = document.getElementById('nombre_completo').value;
+            const correoElectronico = document.getElementById('correo_electronico').value;
+            const tipoUsuario = document.getElementById('tipo_usuario').value;
+            
+            // Validaciones básicas
+            if (!nombreCompleto || !correoElectronico || !tipoUsuario || !password) {
+                showAlert('validationAlert', 'Por favor, completa todos los campos requeridos.');
+                return false;
+            }
             
             if (password !== confirmPassword) {
-                e.preventDefault();
-                alert('Las contraseñas no coinciden. Por favor, verifica.');
+                showAlert('validationAlert', 'Las contraseñas no coinciden. Por favor, verifica.');
                 return false;
             }
             
             if (password.length < 8) {
-                e.preventDefault();
-                alert('La contraseña debe tener al menos 8 caracteres.');
+                showAlert('validationAlert', 'La contraseña debe tener al menos 8 caracteres.');
                 return false;
             }
+
+            // Mostrar loading
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitSpinner = document.getElementById('submitSpinner');
+            
+            submitBtn.disabled = true;
+            submitText.textContent = 'Creando cuenta...';
+            submitSpinner.style.display = 'inline-block';
+
+            try {
+                // Preparar datos EXACTAMENTE como los espera tu modelo
+                const formData = {
+                    nombre_completo: nombreCompleto,
+                    correo_electronico: correoElectronico,
+                    tipo_usuario: tipoUsuario,
+                    descripcion_perfil: document.getElementById('descripcion_perfil').value || '',
+                    telefono_contacto: document.getElementById('telefono_contacto').value || '',
+                    password: password,
+                    horarios_atencion: prepareScheduleData()
+                };
+
+                console.log('📤 Enviando datos al backend:', formData);
+
+                // Enviar datos al backend - PRUEBA DIFERENTES ENDPOINTS
+                const endpoints = [
+                    `${BACKEND_URL}/auth/register/`,
+                    `${BACKEND_URL}/api/auth/register/`,
+                    `${BACKEND_URL}/api/usuarios/`
+                ];
+
+                let response = null;
+                let data = null;
+
+                for (const endpoint of endpoints) {
+                    try {
+                        console.log(`🔍 Probando endpoint: ${endpoint}`);
+                        response = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(formData)
+                        });
+
+                        if (response.ok) {
+                            data = await response.json();
+                            console.log(`✅ Éxito en: ${endpoint}`, data);
+                            break;
+                        } else {
+                            const errorData = await response.json();
+                            console.log(`❌ Error en ${endpoint}:`, errorData);
+                        }
+                    } catch (error) {
+                        console.log(`❌ Conexión falló en ${endpoint}:`, error);
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    const errorData = data || { detail: 'No se pudo conectar con ningún endpoint' };
+                    const errorMessage = errorData.detail || errorData.error || errorData.message || 'Error al crear la cuenta';
+                    showAlert('errorAlert', `Error: ${errorMessage}`);
+                    return;
+                }
+
+                // Registro exitoso
+                if (data.access) {
+                    showAlert('successAlert', '¡Cuenta creada exitosamente! Redirigiendo al login...');
+                    
+                    // Guardar tokens
+                    localStorage.setItem('access_token', data.access);
+                    if (data.refresh) {
+                        localStorage.setItem('refresh_token', data.refresh);
+                    }
+                    
+                    // Redirigir después de 2 segundos
+                    setTimeout(() => {
+                        window.location.href = '/login/';
+                    }, 2000);
+                    
+                } else if (data.id_usuario) {
+                    // Si el registro fue exitoso pero no devuelve token
+                    showAlert('successAlert', '¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.');
+                    
+                    setTimeout(() => {
+                        window.location.href = '/login/';
+                    }, 2000);
+                } else {
+                    showAlert('errorAlert', 'Respuesta inesperada del servidor.');
+                }
+
+            } catch (error) {
+                console.error('❌ Error de conexión:', error);
+                showAlert('errorAlert', 'Error de conexión con el servidor. Verifica que el backend esté ejecutándose.');
+            } finally {
+                // Restaurar botón
+                submitBtn.disabled = false;
+                submitText.textContent = 'Crear Cuenta';
+                submitSpinner.style.display = 'none';
+            }
+        }
+
+        // Inicializar horarios al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            generateScheduleFields();
+            
+            // Asignar el event listener al formulario
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
         });
     </script>
 </body>

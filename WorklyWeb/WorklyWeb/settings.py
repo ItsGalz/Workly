@@ -63,20 +63,20 @@ WSGI_APPLICATION = 'WorklyWeb.wsgi.application'
 
 
 # Database
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'dbcoconuts',  
-        'USER': 'dbadmin',
-        'PASSWORD': 'CoconutPw98',
-        'HOST': 'ls-14d1f7afca7a18c0af4ae36ee4fc6e2ff60ddba7.ct64e6eu2lvc.us-west-2.rds.amazonaws.com',
-        'PORT': '3306',
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
-    }
-}
+#DATABASES = {
+#    'default': {
+#        'ENGINE': 'django.db.backends.mysql',
+#        'NAME': 'dbcoconuts',  
+#        'USER': 'dbadmin',
+#        'PASSWORD': 'CoconutPw98',
+#        'HOST': 'ls-14d1f7afca7a18c0af4ae36ee4fc6e2ff60ddba7.ct64e6eu2lvc.us-west-2.rds.amazonaws.com',
+#        'PORT': '3306',
+#        'OPTIONS': {
+#            'charset': 'utf8mb4',
+#            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#        },
+#    }
+#}
 
 
 # Password validation

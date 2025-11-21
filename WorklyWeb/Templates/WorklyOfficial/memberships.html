@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORKLY - Membresías</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #ffffff; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+        }
+        .navbar-brand { 
+            font-weight: bold; 
+            font-size: 1.5rem; 
+            color: #2c3e50 !important; 
+        }
+        
+        /* Estilos exactos como la imagen */
+        .hero-section {
+            text-align: center;
+            padding: 3rem 0 2rem 0;
+            background: white;
+        }
+        .hero-section h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+        .hero-section p {
+            font-size: 1.1rem;
+            color: #6c757d;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #dee2e6, transparent);
+            margin: 2rem auto;
+            width: 80%;
+        }
+        
+        .package-card {
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 0;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        .package-card:hover {
+            border-color: #3498db;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .package-header {
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .package-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+        }
+        .package-price {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .package-period {
+            color: #6c757d;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .package-features {
+            padding: 2rem;
+        }
+        .feature-main {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        .feature-sub {
+            color: #6c757d;
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+        .feature-sub:before {
+            content: "•";
+            position: absolute;
+            left: -1rem;
+            color: #3498db;
+        }
+        .feature-simple {
+            color: #6c757d;
+            margin-bottom: 0.8rem;
+            position: relative;
+            padding-left: 1rem;
+        }
+        .feature-simple:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #3498db;
+            font-weight: bold;
+        }
+        
+        .package-footer {
+            padding: 0 2rem 2rem;
+            text-align: center;
+        }
+        .btn-comprar {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        .btn-comprar:hover {
+            background: #34495e;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .user-welcome { 
+            color: #2c3e50; 
+            font-weight: 500; 
+        }
+        .membership-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        .membership-visitante {
+            background-color: #95a5a6;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+        <div class="container">
+            <a class="navbar-brand" href="/">🚀 WORKLY</a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3 user-welcome" id="userWelcome">
+                    <span id="userName">Cargando...</span>
+                    <span id="membershipBadge" class="membership-badge membership-visitante">Visitante</span>
+                </span>
+                <div id="authButtons">
+                    <a href="/login/" class="btn btn-primary btn-sm me-2">Iniciar Sesión</a>
+                    <a href="/register/" class="btn btn-outline-dark btn-sm">Registrarse</a>
+                </div>
+                <div id="userMenu" style="display: none;">
+                    <a href="/profile/" class="btn btn-outline-primary btn-sm me-2">Mi Perfil</a>
+                    <button class="btn btn-outline-dark btn-sm" onclick="logout()">Cerrar Sesión</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1>Paquetes para destacar tu perfil</h1>
+            <p>Elige un plan para aparecer en lo más alto de tu categoría y recibir más contactos</p>
+            <div class="divider"></div>
+        </div>
+    </section>
+
+    <!-- Planes de Membresía - 100% DINÁMICOS desde la BD -->
+    <section class="packages-section">
+        <div class="container">
+            <div id="packages-container">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando paquetes...</span>
+                    </div>
+                    <p class="mt-2">Cargando planes disponibles...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal de pago -->
+    <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Confirmar Compra</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="paymentMessage">Estás a punto de adquirir el plan <span id="selectedPlanName" class="fw-bold"></span>.</p>
+                    <div class="alert alert-info">
+                        <small>Serás redirigido a nuestro procesador de pagos seguro.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="processPayment()">Continuar al Pago</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>🚀 WORKLY</h5>
+                    <p class="text-muted">Tu plataforma de confianza para servicios profesionales</p>
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="text-muted">&copy; 2024 WORKLY. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const BACKEND_URL = 'http://127.0.0.1:8001';  // ✅ BACKEND en puerto 8001
+        let selectedPlan = null;
+        const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            loadPackages();
+        });
+
+        // Cargar paquetes desde el BACKEND - 100% DINÁMICO
+        async function loadPackages() {
+            try {
+                console.log('🔗 Conectando a:', `${BACKEND_URL}/api/membresias/`);
+                
+                // PRUEBA DIFERENTES URLs - una de estas debería funcionar
+                const possibleUrls = [
+                    `${BACKEND_URL}/api/membresias/`,
+                    `${BACKEND_URL}/memberships/`,
+                    `${BACKEND_URL}/api/membresias`,
+                    `${BACKEND_URL}/memberships`
+                ];
+
+                let response = null;
+                let workingUrl = null;
+
+                // Probar todas las URLs posibles
+                for (const url of possibleUrls) {
+                    console.log('🔍 Probando URL:', url);
+                    try {
+                        response = await fetch(url, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            workingUrl = url;
+                            console.log('✅ URL funcionando:', url);
+                            break;
+                        }
+                    } catch (e) {
+                        console.log('❌ URL falló:', url, e);
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    showError('No se pudo conectar con el servidor. Verifica las URLs de la API.');
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('📦 Datos recibidos:', data);
+                
+                // Manejar diferentes formatos de respuesta
+                if (Array.isArray(data)) {
+                    // Formato: [ {membresia1}, {membresia2} ]
+                    renderPackages(data);
+                } else if (data.data && Array.isArray(data.data)) {
+                    // Formato: { success: true, data: [ {membresia1}, {membresia2} ] }
+                    renderPackages(data.data);
+                } else if (data.results && Array.isArray(data.results)) {
+                    // Formato: { results: [ {membresia1}, {membresia2} ] }
+                    renderPackages(data.results);
+                } else {
+                    console.error('❌ Formato de datos no reconocido:', data);
+                    showNoPackages();
+                }
+                
+            } catch (error) {
+                console.error('❌ Error:', error);
+                showError(`Error de conexión: ${error.message}`);
+            }
+        }
+
+        // Renderizar los paquetes con datos REALES de la BD
+        function renderPackages(packages) {
+            const container = document.getElementById('packages-container');
+            
+            if (!packages || packages.length === 0) {
+                showNoPackages();
+                return;
+            }
+
+            let html = '<div class="row justify-content-center">';
+            
+            packages.forEach((pkg) => {
+                // Usar los datos REALES de la base de datos
+                html += `
+                    <div class="col-lg-4 col-md-6">
+                        <div class="package-card">
+                            <div class="package-header">
+                                <div class="package-name">${pkg.nombre_membresia}</div>
+                                <div class="package-price">$${pkg.precio_mensual} MXN</div>
+                                <div class="package-period">30 días</div>
+                            </div>
+                            
+                            <div class="package-features">
+                                <!-- Descripción como feature principal -->
+                                <div class="feature-main">${pkg.descripcion}</div>
+                                
+                                <!-- Beneficios procesados desde la BD -->
+                                ${processBenefitsFromDB(pkg.beneficios)}
+                            </div>
+                            
+                            <div class="package-footer">
+                                <button class="btn-comprar" onclick="selectPackage(${pkg.id_membresia}, '${pkg.nombre_membresia}', ${pkg.precio_mensual})">
+                                    Comprar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        // Procesar beneficios directamente desde la BD
+        function processBenefitsFromDB(beneficios) {
+            if (!beneficios || beneficios.trim() === '') {
+                return '<div class="feature-simple">Beneficios incluidos</div>';
+            }
+            
+            // Dividir por líneas y crear features
+            const lines = beneficios.split('\n').filter(line => line.trim() !== '');
+            let featuresHTML = '';
+            
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                
+                // Determinar el tipo de feature basado en el contenido
+                if (trimmed.toLowerCase().includes('aparecer') || trimmed.toLowerCase().includes('lista')) {
+                    featuresHTML += `<div class="feature-main">${trimmed}</div>`;
+                } else if (trimmed.match(/\d+\s*categoría/i) || trimmed.toLowerCase().includes('sello')) {
+                    featuresHTML += `<div class="feature-sub">${trimmed}</div>`;
+                } else {
+                    featuresHTML += `<div class="feature-simple">${trimmed}</div>`;
+                }
+            });
+            
+            return featuresHTML;
+        }
+
+        function showNoPackages() {
+            const container = document.getElementById('packages-container');
+            container.innerHTML = `
+                <div class="col-12 text-center">
+                    <div class="alert alert-warning">
+                        <h4>No se encontraron planes de membresía</h4>
+                        <p>La tabla 'membresias' existe pero está vacía o no se pueden cargar los datos.</p>
+                        <button class="btn btn-sm btn-outline-primary mt-2" onclick="testConnection()">Probar conexión</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const container = document.getElementById('packages-container');
+            container.innerHTML = `
+                <div class="col-12 text-center">
+                    <div class="alert alert-danger">
+                        <h4>${message}</h4>
+                        <p>Verifica que el backend esté ejecutándose en http://127.0.0.1:8001</p>
+                        <button class="btn btn-sm btn-outline-primary mt-2" onclick="loadPackages()">Reintentar</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Función para probar la conexión
+        async function testConnection() {
+            console.log('🧪 Probando conexión...');
+            
+            const testUrls = [
+                `${BACKEND_URL}/api/membresias/`,
+                `${BACKEND_URL}/memberships/`,
+                `${BACKEND_URL}/api/membresias`,
+                `${BACKEND_URL}/memberships`
+            ];
+
+            for (const url of testUrls) {
+                try {
+                    const response = await fetch(url);
+                    console.log(`🔍 ${url}: ${response.status} ${response.statusText}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log(`✅ Datos de ${url}:`, data);
+                    }
+                } catch (error) {
+                    console.log(`❌ Error en ${url}:`, error.message);
+                }
+            }
+        }
+
+        // Seleccionar paquete
+        function selectPackage(id, name, price) {
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                alert('Debes iniciar sesión para adquirir una membresía');
+                window.location.href = '/login/';
+                return;
+            }
+            
+            selectedPlan = { id, name, price };
+            document.getElementById('selectedPlanName').textContent = name;
+            paymentModal.show();
+        }
+
+        // Procesar pago
+        async function processPayment() {
+            if (!selectedPlan) return;
+            
+            try {
+                const response = await fetch(`${BACKEND_URL}/memberships/process-payment/`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        membership_id: selectedPlan.id,
+                        payment_method: 'tarjeta'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('¡Membresía adquirida exitosamente!');
+                    paymentModal.hide();
+                    window.location.href = '/profile/';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error al procesar el pago');
+            }
+        }
+
+        // Funciones de autenticación
+        async function checkAuthentication() {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                showUnauthenticatedUI();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        showAuthenticatedUI(data.data);
+                    }
+                } else {
+                    showUnauthenticatedUI();
+                    }
+            } catch (error) {
+                showUnauthenticatedUI();
+            }
+        }
+
+        function showAuthenticatedUI(userData) {
+            document.getElementById('userName').textContent = userData.nombre_completo || 'Usuario';
+            document.getElementById('authButtons').style.display = 'none';
+            document.getElementById('userMenu').style.display = 'flex';
+        }
+
+        function showUnauthenticatedUI() {
+            document.getElementById('userName').textContent = 'Invitado';
+            document.getElementById('authButtons').style.display = 'block';
+            document.getElementById('userMenu').style.display = 'none';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/logout/';
+        }
+    </script>
+</body>
+</html>

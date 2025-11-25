@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORKLY - Publicar Talento Humano</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚀</text></svg>">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 0;
+        }
+        
+        /* Botón de volver en esquina superior izquierda */
+        .back-button-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+        
+        .back-button {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            color: #2c3e50;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Contenedor principal expandido */
+        .main-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            width: 100%;
+        }
+        
+        .publish-container {
+            width: 95%;
+            max-width: 1200px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 80vh;
+        }
+        
+        .publish-header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .publish-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+        }
+        
+        .publish-header p {
+            font-size: 18px;
+            opacity: 0.9;
+            margin: 0;
+        }
+        
+        .content-wrapper {
+            display: flex;
+            flex: 1;
+        }
+        
+        .form-section {
+            flex: 1;
+            padding: 40px;
+        }
+        
+        .info-section {
+            flex: 0 0 400px;
+            background: #f8f9fa;
+            padding: 40px;
+            border-left: 1px solid #eaeaea;
+        }
+        
+        .publish-tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #eaeaea;
+            background: #f8f9fa;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+        
+        .publish-tab {
+            padding: 18px 30px;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            flex: 1;
+            text-align: center;
+            font-size: 16px;
+            background: #f8f9fa;
+        }
+        
+        .publish-tab.active {
+            border-bottom: 3px solid #3498db;
+            color: #3498db;
+            background: white;
+        }
+        
+        .publish-tab:hover {
+            color: #3498db;
+            background: white;
+        }
+        
+        .form-group {
+            margin-bottom: 30px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #eaeaea;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            background: #f8f9fa;
+        }
+        
+        .form-control:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            background: white;
+        }
+        
+        .form-textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(to right, transparent, #eaeaea, transparent);
+            margin: 35px 0;
+        }
+        
+        .publish-btn {
+            display: block;
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .publish-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #3498db;
+        }
+        
+        .info-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-card p {
+            color: #5a6c7d;
+            line-height: 1.6;
+            margin: 0;
+        }
+        
+        .category-list {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0 0 0;
+        }
+        
+        .category-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .category-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            margin-top: auto;
+        }
+        
+        .footer p {
+            margin: 0;
+            color: #bdc3c7;
+        }
+        
+        @media (max-width: 992px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .info-section {
+                flex: none;
+                border-left: none;
+                border-top: 1px solid #eaeaea;
+            }
+            
+            .publish-header {
+                padding: 30px 20px;
+            }
+            
+            .form-section, .info-section {
+                padding: 30px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .publish-container {
+                width: 100%;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            
+            .main-container {
+                padding: 0;
+            }
+            
+            .publish-tabs {
+                flex-direction: column;
+            }
+            
+            .publish-tab {
+                padding: 15px;
+            }
+            
+            .back-button-container {
+                top: 15px;
+                left: 15px;
+            }
+            
+            .back-button {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .form-section, .info-section {
+                padding: 20px;
+            }
+            
+            .publish-header {
+                padding: 25px 15px;
+            }
+            
+            .publish-header h1 {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Botón de volver en esquina superior izquierda -->
+    <div class="back-button-container">
+        <button class="back-button" onclick="goBack()">
+            <span>←</span> Volver
+        </button>
+    </div>
+
+    <!-- Contenedor principal -->
+    <div class="main-container">
+        <div class="publish-container">
+            <div class="publish-header">
+                <h1 id="publishTitle">Publicar talento humano</h1>
+                <p>Comparte tu talento o empresa con nuestra comunidad WORKLY</p>
+            </div>
+            
+            <div class="content-wrapper">
+                <div class="form-section">
+                    <div class="publish-tabs">
+                        <div class="publish-tab active" onclick="switchPublishType('talent')">Talento Humano</div>
+                        <div class="publish-tab" onclick="switchPublishType('company')">Empresa</div>
+                    </div>
+                    
+                    <!-- Formulario para Talento Humano -->
+                    <form id="talentForm" style="display: block;">
+                        <div class="form-group">
+                            <label for="nombre" class="form-label">Nombre del talento</label>
+                            <input type="text" id="nombre" class="form-control" value="Ingresa tu Nombre completo">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="categoria" class="form-label">Categoría</label>
+                            <select id="categoria" class="form-control">
+                                <option value="" disabled selected>Selecciona una categoría</option>
+                                <option value="electricidad">⚡ Electricidad</option>
+                                <option value="construccion">🧱 Construcción</option>
+                                <option value="plomeria">🔧 Plomería</option>
+                                <option value="carpinteria">🛠️ Carpintería</option>
+                                <option value="refrigeracion">❄️ Refrigeración / Aire Acondicionado</option>
+                                <option value="mecanica">🚗 Mecánica automotriz</option>
+                                <option value="turismo">🧳 Turismo / Guías / Hotelería</option>
+                                <option value="limpieza">🏡 Limpieza</option>
+                                <option value="reposteria">🎂 Repostería</option>
+                                <option value="educacion">🎓 Tutorías / Educación</option>
+                                <option value="cuidado">👶 Cuidado infantil / Adultos mayores</option>
+                                <option value="belleza">💇 Belleza</option>
+                                <option value="otros">🔮 Otros</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="contacto" class="form-label">Contacto</label>
+                            <input type="text" id="contacto" class="form-control" value="Num. de contacto">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea id="descripcion" class="form-control form-textarea" placeholder="Describe tus habilidades, experiencia y servicios que ofreces..."></textarea>
+                        </div>
+                        
+                        <div class="divider"></div>
+                        
+                        <button type="button" class="publish-btn" onclick="submitTalentForm()">Publicar Talento</button>
+                    </form>
+                    
+                    <!-- Formulario para Empresa -->
+                    <form id="companyForm" style="display: none;">
+                        <div class="form-group">
+                            <label for="empresaNombre" class="form-label">Nombre de la empresa</label>
+                            <input type="text" id="empresaNombre" class="form-control" placeholder="Ingresa el nombre de tu empresa">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="empresaCategoria" class="form-label">Categoría</label>
+                            <select id="empresaCategoria" class="form-control">
+                                <option value="" disabled selected>Selecciona una categoría</option>
+                                <option value="electricidad">⚡ Electricidad</option>
+                                <option value="construccion">🧱 Construcción</option>
+                                <option value="plomeria">🔧 Plomería</option>
+                                <option value="carpinteria">🛠️ Carpintería</option>
+                                <option value="refrigeracion">❄️ Refrigeración / Aire Acondicionado</option>
+                                <option value="mecanica">🚗 Mecánica automotriz</option>
+                                <option value="turismo">🧳 Turismo / Guías / Hotelería</option>
+                                <option value="limpieza">🏡 Limpieza</option>
+                                <option value="reposteria">🎂 Repostería</option>
+                                <option value="educacion">🎓 Tutorías / Educación</option>
+                                <option value="cuidado">👶 Cuidado infantil / Adultos mayores</option>
+                                <option value="belleza">💇 Belleza</option>
+                                <option value="otros">🔮 Otros</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="empresaContacto" class="form-label">Contacto</label>
+                            <input type="text" id="empresaContacto" class="form-control" placeholder="Teléfono, email o sitio web">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="empresaDescripcion" class="form-label">Descripción de la empresa</label>
+                            <textarea id="empresaDescripcion" class="form-control form-textarea" placeholder="Describe los servicios que ofrece tu empresa..."></textarea>
+                        </div>
+                        
+                        <div class="divider"></div>
+                        
+                        <button type="button" class="publish-btn" onclick="submitCompanyForm()">Publicar Empresa</button>
+                    </form>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-card">
+                        <h3>📋 Categorías Disponibles</h3>
+                        <ul class="category-list">
+                            <li>⚡ Electricidad</li>
+                            <li>🧱 Construcción</li>
+                            <li>🔧 Plomería</li>
+                            <li>🛠️ Carpintería</li>
+                            <li>❄️ Refrigeración</li>
+                            <li>🚗 Mecánica</li>
+                            <li>🧳 Turismo</li>
+                            <li>🏡 Limpieza</li>
+                            <li>🎂 Repostería</li>
+                            <li>🎓 Educación</li>
+                            <li>👶 Cuidado</li>
+                            <li>💇 Belleza</li>
+                            <li>🔮 Otros</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>💡 Consejos para Publicar</h3>
+                        <p>• Completa todos los campos obligatorios</p>
+                        <p>• Sé específico en tu descripción</p>
+                        <p>• Incluye información de contacto válida</p>
+                        <p>• Selecciona la categoría más adecuada</p>
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3>🚀 Beneficios WORKLY</h3>
+                        <p>• Alcance a miles de clientes potenciales</p>
+                        <p>• Perfil profesional destacado</p>
+                        <p>• Sistema de reseñas y calificaciones</p>
+                        <p>• Soporte y asistencia continua</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>🚀 WORKLY - Tu plataforma de confianza para servicios profesionales</p>
+        <p>&copy; 2024 WORKLY. Todos los derechos reservados.</p>
+    </div>
+
+    <script>
+        // Función para cambiar entre tipos de publicación
+        function switchPublishType(type) {
+            const talentTab = document.querySelector('.publish-tab:nth-child(1)');
+            const companyTab = document.querySelector('.publish-tab:nth-child(2)');
+            const talentForm = document.getElementById('talentForm');
+            const companyForm = document.getElementById('companyForm');
+            const publishTitle = document.getElementById('publishTitle');
+            
+            if (type === 'talent') {
+                talentTab.classList.add('active');
+                companyTab.classList.remove('active');
+                talentForm.style.display = 'block';
+                companyForm.style.display = 'none';
+                publishTitle.textContent = 'Publicar talento humano';
+            } else {
+                talentTab.classList.remove('active');
+                companyTab.classList.add('active');
+                talentForm.style.display = 'none';
+                companyForm.style.display = 'block';
+                publishTitle.textContent = 'Publicar empresa';
+            }
+        }
+
+        // Función para enviar formulario de talento
+        function submitTalentForm() {
+            const nombre = document.getElementById('nombre').value;
+            const categoria = document.getElementById('categoria').value;
+            const contacto = document.getElementById('contacto').value;
+            const descripcion = document.getElementById('descripcion').value;
+            
+            if (!nombre || !categoria || !contacto) {
+                alert('Por favor completa todos los campos obligatorios');
+                return;
+            }
+            
+            // Aquí iría la lógica para enviar los datos al backend
+            alert(`✅ Talento publicado exitosamente:\n\nNombre: ${nombre}\nCategoría: ${categoria}\nContacto: ${contacto}\nDescripción: ${descripcion}`);
+            
+            // Limpiar formulario después de enviar
+            document.getElementById('descripcion').value = '';
+        }
+
+        // Función para enviar formulario de empresa
+        function submitCompanyForm() {
+            const empresaNombre = document.getElementById('empresaNombre').value;
+            const empresaCategoria = document.getElementById('empresaCategoria').value;
+            const empresaContacto = document.getElementById('empresaContacto').value;
+            const empresaDescripcion = document.getElementById('empresaDescripcion').value;
+            
+            if (!empresaNombre || !empresaCategoria || !empresaContacto) {
+                alert('Por favor completa todos los campos obligatorios');
+                return;
+            }
+            
+            // Aquí iría la lógica para enviar los datos al backend
+            alert(`✅ Empresa publicada exitosamente:\n\nNombre: ${empresaNombre}\nCategoría: ${empresaCategoria}\nContacto: ${empresaContacto}\nDescripción: ${empresaDescripcion}`);
+            
+            // Limpiar formulario después de enviar
+            document.getElementById('empresaNombre').value = '';
+            document.getElementById('empresaContacto').value = '';
+            document.getElementById('empresaDescripcion').value = '';
+        }
+
+        // Función para volver atrás
+        function goBack() {
+            if (document.referrer) {
+                window.history.back();
+            } else {
+                // Si no hay página anterior, redirigir a la página principal
+                window.location.href = '/';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 def login_view(request):
     """Página principal - Login"""
@@ -64,3 +65,8 @@ def profile_view(request):
 def memberships_view(request):
     """Página de membresías"""
     return render(request, 'WorklyOfficial/memberships.html')  # ✅ Ruta corregida
+
+
+def publicarme_view(request):
+    """Página para publicar servicios"""
+    return render(request, 'WorklyOfficial/publicarme.html')  # ✅ Nueva vista

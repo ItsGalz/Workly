@@ -7,6 +7,7 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
+    path('publicarme/', views.publicarme_view, name='publicarme'),
 
      # ✅ NUEVAS RUTAS PARA EL FRONTEND
     path('memberships/', views.memberships_view, name='memberships'),

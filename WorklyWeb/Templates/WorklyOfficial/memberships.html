@@ -153,6 +153,16 @@
     </style>
 </head>
 <body>
+    <!-- Loader inicial -->
+    <div id="initialLoader" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center;">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Inicializando...</p>
+        </div>
+    </div>
+
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
         <div class="container">
             <a class="navbar-brand" href="/">🚀 WORKLY</a>
@@ -161,7 +171,7 @@
                     <span id="userName">Cargando...</span>
                     <span id="membershipBadge" class="membership-badge membership-visitante">Visitante</span>
                 </span>
-                <div id="authButtons">
+                <div id="authButtons" style="display: none;">
                     <a href="/login/" class="btn btn-primary btn-sm me-2">Iniciar Sesión</a>
                     <a href="/register/" class="btn btn-outline-dark btn-sm">Registrarse</a>
                 </div>
@@ -182,7 +192,7 @@
         </div>
     </section>
 
-    <!-- Planes de Membresía - 100% DINÁMICOS desde la BD -->
+    <!-- Planes de Membresía -->
     <section class="packages-section">
         <div class="container">
             <div id="packages-container">
@@ -195,28 +205,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Modal de pago -->
-    <div class="modal fade" id="paymentModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title">Confirmar Compra</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p id="paymentMessage">Estás a punto de adquirir el plan <span id="selectedPlanName" class="fw-bold"></span>.</p>
-                    <div class="alert alert-info">
-                        <small>Serás redirigido a nuestro procesador de pagos seguro.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="processPayment()">Continuar al Pago</button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <footer class="bg-dark text-white py-4 mt-5">
         <div class="container">
@@ -234,82 +222,137 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const BACKEND_URL = 'http://127.0.0.1:8001';  // ✅ BACKEND en puerto 8001
-        let selectedPlan = null;
-        const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+        // =============================================
+        // CONFIGURACIÓN Y VARIABLES GLOBALES
+        // =============================================
+        const BACKEND_URL = 'http://127.0.0.1:8001';
 
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuthentication();
-            loadPackages();
+        // =============================================
+        // GESTIÓN MEJORADA DEL TOKEN
+        // =============================================
+
+        // Función para asegurar que el token esté siempre disponible
+        function ensureToken() {
+            let token = localStorage.getItem('access_token');
+            if (!token) {
+                // Si no hay token, crear uno temporal (solo para desarrollo)
+                console.log('🔐 No hay token, creando uno temporal...');
+                token = 'temp_token_' + Date.now();
+                localStorage.setItem('access_token', token);
+            }
+            return token;
+        }
+
+        // =============================================
+        // INICIALIZACIÓN
+        // =============================================
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 Inicializando página de membresías...');
+            
+            // Asegurar que el token exista
+            ensureToken();
+            
+            // Verificar autenticación (sin bloquear la carga)
+            checkAuthentication().then(() => {
+                // Cargar paquetes después de la autenticación
+                loadPackages();
+                
+                // Ocultar loader
+                setTimeout(() => {
+                    document.getElementById('initialLoader').style.display = 'none';
+                }, 500);
+            });
         });
 
-        // Cargar paquetes desde el BACKEND - 100% DINÁMICO
-        async function loadPackages() {
+        // =============================================
+        // AUTENTICACIÓN MEJORADA
+        // =============================================
+
+        async function checkAuthentication() {
+            console.log('🔐 Verificando autenticación...');
+            
+            const token = ensureToken();
+            
             try {
-                console.log('🔗 Conectando a:', `${BACKEND_URL}/api/membresias/`);
-                
-                // PRUEBA DIFERENTES URLs - una de estas debería funcionar
-                const possibleUrls = [
-                    `${BACKEND_URL}/api/membresias/`,
-                    `${BACKEND_URL}/memberships/`,
-                    `${BACKEND_URL}/api/membresias`,
-                    `${BACKEND_URL}/memberships`
-                ];
+                const response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
 
-                let response = null;
-                let workingUrl = null;
-
-                // Probar todas las URLs posibles
-                for (const url of possibleUrls) {
-                    console.log('🔍 Probando URL:', url);
-                    try {
-                        response = await fetch(url, {
-                            method: 'GET',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        });
-                        
-                        if (response.ok) {
-                            workingUrl = url;
-                            console.log('✅ URL funcionando:', url);
-                            break;
-                        }
-                    } catch (e) {
-                        console.log('❌ URL falló:', url, e);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        console.log('✅ Usuario autenticado:', data.data.nombre_completo);
+                        showAuthenticatedUI(data.data);
+                        return true;
                     }
                 }
+            } catch (error) {
+                console.log('⚠️ Error verificando autenticación, mostrando como invitado:', error);
+            }
+            
+            // Si falla la verificación, mostrar como no autenticado
+            showUnauthenticatedUI();
+            return false;
+        }
 
-                if (!response || !response.ok) {
-                    showError('No se pudo conectar con el servidor. Verifica las URLs de la API.');
-                    return;
+        function showAuthenticatedUI(userData) {
+            document.getElementById('userName').textContent = userData.nombre_completo || 'Usuario';
+            document.getElementById('authButtons').style.display = 'none';
+            document.getElementById('userMenu').style.display = 'flex';
+        }
+
+        function showUnauthenticatedUI() {
+            document.getElementById('userName').textContent = 'Invitado';
+            document.getElementById('authButtons').style.display = 'block';
+            document.getElementById('userMenu').style.display = 'none';
+        }
+
+        // =============================================
+        // CARGAR PAQUETES
+        // =============================================
+
+        async function loadPackages() {
+            try {
+                console.log('📦 Cargando paquetes...');
+                
+                const response = await fetch(`${BACKEND_URL}/api/membresias/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${ensureToken()}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Error al cargar paquetes');
                 }
 
                 const data = await response.json();
-                console.log('📦 Datos recibidos:', data);
+                console.log('✅ Paquetes cargados:', data);
                 
                 // Manejar diferentes formatos de respuesta
+                let packages = [];
                 if (Array.isArray(data)) {
-                    // Formato: [ {membresia1}, {membresia2} ]
-                    renderPackages(data);
+                    packages = data;
                 } else if (data.data && Array.isArray(data.data)) {
-                    // Formato: { success: true, data: [ {membresia1}, {membresia2} ] }
-                    renderPackages(data.data);
+                    packages = data.data;
                 } else if (data.results && Array.isArray(data.results)) {
-                    // Formato: { results: [ {membresia1}, {membresia2} ] }
-                    renderPackages(data.results);
-                } else {
-                    console.error('❌ Formato de datos no reconocido:', data);
-                    showNoPackages();
+                    packages = data.results;
                 }
                 
+                renderPackages(packages);
+                
             } catch (error) {
-                console.error('❌ Error:', error);
-                showError(`Error de conexión: ${error.message}`);
+                console.error('❌ Error cargando paquetes:', error);
+                showError('No se pudieron cargar los paquetes. Intenta recargar la página.');
             }
         }
 
-        // Renderizar los paquetes con datos REALES de la BD
         function renderPackages(packages) {
             const container = document.getElementById('packages-container');
             
@@ -321,7 +364,6 @@
             let html = '<div class="row justify-content-center">';
             
             packages.forEach((pkg) => {
-                // Usar los datos REALES de la base de datos
                 html += `
                     <div class="col-lg-4 col-md-6">
                         <div class="package-card">
@@ -332,10 +374,7 @@
                             </div>
                             
                             <div class="package-features">
-                                <!-- Descripción como feature principal -->
                                 <div class="feature-main">${pkg.descripcion}</div>
-                                
-                                <!-- Beneficios procesados desde la BD -->
                                 ${processBenefitsFromDB(pkg.beneficios)}
                             </div>
                             
@@ -353,20 +392,17 @@
             container.innerHTML = html;
         }
 
-        // Procesar beneficios directamente desde la BD
         function processBenefitsFromDB(beneficios) {
             if (!beneficios || beneficios.trim() === '') {
                 return '<div class="feature-simple">Beneficios incluidos</div>';
             }
             
-            // Dividir por líneas y crear features
             const lines = beneficios.split('\n').filter(line => line.trim() !== '');
             let featuresHTML = '';
             
             lines.forEach(line => {
                 const trimmed = line.trim();
                 
-                // Determinar el tipo de feature basado en el contenido
                 if (trimmed.toLowerCase().includes('aparecer') || trimmed.toLowerCase().includes('lista')) {
                     featuresHTML += `<div class="feature-main">${trimmed}</div>`;
                 } else if (trimmed.match(/\d+\s*categoría/i) || trimmed.toLowerCase().includes('sello')) {
@@ -379,14 +415,37 @@
             return featuresHTML;
         }
 
+        // =============================================
+        // SELECCIÓN DE PAQUETE - REDIRIGE A PAGINA DE PAGO
+        // =============================================
+
+        function selectPackage(id, name, price) {
+    console.log('🛒 Seleccionando paquete:', { id, name, price });
+    
+    const token = ensureToken();
+    
+    if (!token || token.includes('temp_token_')) {
+        alert('Debes iniciar sesión para adquirir una membresía');
+        window.location.href = '/login/';
+        return;
+    }
+    
+    // REDIRIGIR A LA PÁGINA DE PAGO
+    console.log('🔗 Redirigiendo a página de pago...');
+    window.location.href = `/payment/?id=${id}`;
+}
+
+        // =============================================
+        // UTILIDADES
+        // =============================================
+
         function showNoPackages() {
             const container = document.getElementById('packages-container');
             container.innerHTML = `
                 <div class="col-12 text-center">
                     <div class="alert alert-warning">
-                        <h4>No se encontraron planes de membresía</h4>
-                        <p>La tabla 'membresias' existe pero está vacía o no se pueden cargar los datos.</p>
-                        <button class="btn btn-sm btn-outline-primary mt-2" onclick="testConnection()">Probar conexión</button>
+                        <h4>No hay planes disponibles</h4>
+                        <p>No se encontraron planes de membresía en este momento.</p>
                     </div>
                 </div>
             `;
@@ -398,129 +457,22 @@
                 <div class="col-12 text-center">
                     <div class="alert alert-danger">
                         <h4>${message}</h4>
-                        <p>Verifica que el backend esté ejecutándose en http://127.0.0.1:8001</p>
                         <button class="btn btn-sm btn-outline-primary mt-2" onclick="loadPackages()">Reintentar</button>
                     </div>
                 </div>
             `;
         }
 
-        // Función para probar la conexión
-        async function testConnection() {
-            console.log('🧪 Probando conexión...');
-            
-            const testUrls = [
-                `${BACKEND_URL}/api/membresias/`,
-                `${BACKEND_URL}/memberships/`,
-                `${BACKEND_URL}/api/membresias`,
-                `${BACKEND_URL}/memberships`
-            ];
-
-            for (const url of testUrls) {
-                try {
-                    const response = await fetch(url);
-                    console.log(`🔍 ${url}: ${response.status} ${response.statusText}`);
-                    if (response.ok) {
-                        const data = await response.json();
-                        console.log(`✅ Datos de ${url}:`, data);
-                    }
-                } catch (error) {
-                    console.log(`❌ Error en ${url}:`, error.message);
-                }
-            }
-        }
-
-        // Seleccionar paquete
-        function selectPackage(id, name, price) {
-            const token = localStorage.getItem('access_token');
-            
-            if (!token) {
-                alert('Debes iniciar sesión para adquirir una membresía');
-                window.location.href = '/login/';
-                return;
-            }
-            
-            selectedPlan = { id, name, price };
-            document.getElementById('selectedPlanName').textContent = name;
-            paymentModal.show();
-        }
-
-        // Procesar pago
-        async function processPayment() {
-            if (!selectedPlan) return;
-            
-            try {
-                const response = await fetch(`${BACKEND_URL}/memberships/process-payment/`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        membership_id: selectedPlan.id,
-                        payment_method: 'tarjeta'
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    alert('¡Membresía adquirida exitosamente!');
-                    paymentModal.hide();
-                    window.location.href = '/profile/';
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            } catch (error) {
-                alert('Error al procesar el pago');
-            }
-        }
-
-        // Funciones de autenticación
-        async function checkAuthentication() {
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                showUnauthenticatedUI();
-                return;
-            }
-
-            try {
-                const response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data.success) {
-                        showAuthenticatedUI(data.data);
-                    }
-                } else {
-                    showUnauthenticatedUI();
-                    }
-            } catch (error) {
-                showUnauthenticatedUI();
-            }
-        }
-
-        function showAuthenticatedUI(userData) {
-            document.getElementById('userName').textContent = userData.nombre_completo || 'Usuario';
-            document.getElementById('authButtons').style.display = 'none';
-            document.getElementById('userMenu').style.display = 'flex';
-        }
-
-        function showUnauthenticatedUI() {
-            document.getElementById('userName').textContent = 'Invitado';
-            document.getElementById('authButtons').style.display = 'block';
-            document.getElementById('userMenu').style.display = 'none';
-        }
-
         function logout() {
-            localStorage.clear();
+            localStorage.removeItem('access_token');
             window.location.href = '/logout/';
+        }
+
+        // Función global para debug
+        window.debugAuth = function() {
+            console.log('🔐 Debug Auth:');
+            console.log('Token:', localStorage.getItem('access_token'));
+            checkAuthentication();
         }
     </script>
 </body>

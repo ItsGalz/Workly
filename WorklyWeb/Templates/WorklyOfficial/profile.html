@@ -74,162 +74,300 @@
             background-color: #95a5a6;
             color: white;
         }
+        .publications-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid #e9ecef;
+        }
+        .publication-card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+        .publication-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .publication-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .publication-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        .publication-status {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-paused {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-inactive {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .publication-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        .no-publications {
+            text-align: center;
+            padding: 2rem;
+            color: #6c757d;
+        }
+        .section-title {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #3498db;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        .main-content {
+            display: none; /* Ocultar hasta que se verifique el token */
+        }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
-        <div class="container">
-            <a class="navbar-brand" href="/">🚀 WORKLY</a>
-            <div class="navbar-nav ms-auto">
-                <span class="navbar-text me-3 user-welcome" id="userWelcome">
-                    <span id="userName">Cargando...</span>
-                    <span id="membershipBadge" class="membership-badge membership-visitante">Visitante</span>
-                </span>
-                <div id="authButtons">
-                    <a href="/login/" class="btn btn-workly btn-sm me-2">Iniciar Sesión</a>
-                    <a href="/register/" class="btn btn-outline-dark btn-sm">Registrarse</a>
-                </div>
-                <div id="userMenu" style="display: none;">
-                    <a href="/profile/" class="btn btn-outline-primary btn-sm me-2">Mi Perfil</a>
-                    <button class="btn btn-outline-dark btn-sm" onclick="logout()">Cerrar Sesión</button>
-                </div>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Verificando autenticación...</span>
             </div>
-        </div>
-    </nav>
-
-    <div class="container my-5">
-        <!-- Logo de membresías -->
-        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM0OThlYiIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIj48cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptLTIgMTVsLTUtNSAxLjQxLTEuNDFMMTAgMTQuMTdsNy41OS03LjU5TDE5IDlsLTkgOXoiPjwvcGF0aD48L3N2Zz4=" 
-             alt="Membresías" 
-             class="membership-logo" 
-             onclick="goToMemberships()"
-             title="Ver planes de membresía">
-        
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <div class="profile-card">
-                    <div class="profile-header text-center">
-                        <div class="profile-avatar">👤</div>
-                        <h2 id="profileName">Mi Perfil</h2>
-                        <p class="mb-0">Gestiona tu información personal</p>
-                    </div>
-                    <div class="p-4">
-                        <!-- Información del Usuario -->
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="info-label">Nombre completo</div>
-                                <div class="info-value" id="userFullName">
-                                    <span class="empty-field">Cargando...</span>
-                                </div>
-                                <input type="text" class="edit-input d-none" id="editFullName" placeholder="Ingresa tu nombre completo">
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-label">Tipo de Usuario</div>
-                                <div class="info-value" id="userType">
-                                    <span class="empty-field">Cargando...</span>
-                                </div>
-                                <select class="edit-input d-none" id="editUserType">
-                                    <option value="talento_humano">Talento Humano</option>
-                                    <option value="empresa">Empresa</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="info-label">Correo electrónico</div>
-                                <div class="info-value" id="userEmail">
-                                    <span class="empty-field">Cargando...</span>
-                                </div>
-                                <input type="email" class="edit-input d-none" id="editEmail" placeholder="Ingresa tu correo electrónico">
-                            </div>
-                            <div class="col-md-6">
-                                <div class="info-label">Teléfono de contacto</div>
-                                <div class="info-value" id="userPhone">
-                                    <span class="empty-field">Cargando...</span>
-                                </div>
-                                <input type="tel" class="edit-input d-none" id="editPhone" placeholder="Ingresa tu teléfono">
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="info-label">Descripción del perfil</div>
-                                <div class="info-value" id="userDescription" style="min-height: 80px;">
-                                    <span class="empty-field">Cargando...</span>
-                                </div>
-                                <textarea class="edit-textarea d-none" id="editDescription" placeholder="Describe tu perfil profesional..."></textarea>
-                            </div>
-                        </div>
-
-                        <!-- Botones de acción -->
-                        <div class="row mt-4">
-                            <div class="col-12">
-                                <div class="d-flex gap-2 justify-content-end">
-                                    <button class="btn btn-outline-secondary" onclick="goBack()" id="backBtn">
-                                        ← Volver al Inicio
-                                    </button>
-                                    <button class="btn btn-workly" onclick="toggleEditMode()" id="editBtn">
-                                        ✏️ Editar Perfil
-                                    </button>
-                                    <button class="btn btn-success d-none" onclick="saveProfile()" id="saveBtn">
-                                        💾 Guardar Cambios
-                                    </button>
-                                    <button class="btn btn-outline-danger d-none" onclick="cancelEdit()" id="cancelBtn">
-                                        ❌ Cancelar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <h5>Verificando autenticación...</h5>
+            <p class="text-muted">Por favor espera mientras verificamos tu sesión</p>
         </div>
     </div>
 
-    <!-- Modal de éxito -->
-    <div class="modal fade" id="successModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title">✅ Éxito</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p id="successMessage">Los cambios se han guardado correctamente.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+    <!-- Contenido Principal (oculto inicialmente) -->
+    <div id="mainContent" class="main-content">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom">
+            <div class="container">
+                <a class="navbar-brand" href="/">🚀 WORKLY</a>
+                <div class="navbar-nav ms-auto">
+                    <span class="navbar-text me-3 user-welcome" id="userWelcome">
+                        <span id="userName">Cargando...</span>
+                        <span id="membershipBadge" class="membership-badge membership-visitante">Visitante</span>
+                    </span>
+                    <div id="authButtons">
+                        <a href="/login/" class="btn btn-workly btn-sm me-2">Iniciar Sesión</a>
+                        <a href="/register/" class="btn btn-outline-dark btn-sm">Registrarse</a>
+                    </div>
+                    <div id="userMenu" style="display: none;">
+                        <a href="/profile/" class="btn btn-outline-primary btn-sm me-2">Mi Perfil</a>
+                        <button class="btn btn-outline-dark btn-sm" onclick="logout()">Cerrar Sesión</button>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </nav>
 
-    <footer class="bg-dark text-white py-4 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>🚀 WORKLY</h5>
-                    <p class="text-muted">Tu plataforma de confianza para servicios profesionales</p>
-                </div>
-                <div class="col-md-6 text-end">
-                    <p class="text-muted">&copy; 2024 WORKLY. Todos los derechos reservados.</p>
+        <div class="container my-5">
+            <!-- Logo de membresías -->
+            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzM0OThlYiIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIj48cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptLTIgMTVsLTUtNSAxLjQxLTEuNDFMMTAgMTQuMTdsNy41OS03LjU5TDE5IDlsLTkgOXoiPjwvcGF0aD48L3N2Zz4=" 
+                 alt="Membresías" 
+                 class="membership-logo" 
+                 onclick="goToMemberships()"
+                 title="Ver planes de membresía">
+            
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <div class="profile-card">
+                        <div class="profile-header text-center">
+                            <div class="profile-avatar">👤</div>
+                            <h2 id="profileName">Mi Perfil</h2>
+                            <p class="mb-0">Gestiona tu información personal y publicaciones</p>
+                        </div>
+                        <div class="p-4">
+                            <!-- Información del Usuario -->
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-label">Nombre completo</div>
+                                    <div class="info-value" id="userFullName">
+                                        <span class="empty-field">Cargando...</span>
+                                    </div>
+                                    <input type="text" class="edit-input d-none" id="editFullName" placeholder="Ingresa tu nombre completo">
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-label">Tipo de Usuario</div>
+                                    <div class="info-value" id="userType">
+                                        <span class="empty-field">Cargando...</span>
+                                    </div>
+                                    <select class="edit-input d-none" id="editUserType">
+                                        <option value="talento_humano">Talento Humano</option>
+                                        <option value="empresa">Empresa</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-label">Correo electrónico</div>
+                                    <div class="info-value" id="userEmail">
+                                        <span class="empty-field">Cargando...</span>
+                                    </div>
+                                    <input type="email" class="edit-input d-none" id="editEmail" placeholder="Ingresa tu correo electrónico">
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-label">Teléfono de contacto</div>
+                                    <div class="info-value" id="userPhone">
+                                        <span class="empty-field">Cargando...</span>
+                                    </div>
+                                    <input type="tel" class="edit-input d-none" id="editPhone" placeholder="Ingresa tu teléfono">
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="info-label">Descripción del perfil</div>
+                                    <div class="info-value" id="userDescription" style="min-height: 80px;">
+                                        <span class="empty-field">Cargando...</span>
+                                    </div>
+                                    <textarea class="edit-textarea d-none" id="editDescription" placeholder="Describe tu perfil profesional..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Botones de acción del perfil -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="d-flex gap-2 justify-content-end">
+                                        <button class="btn btn-outline-secondary" onclick="goBack()" id="backBtn">
+                                            ← Volver al Inicio
+                                        </button>
+                                        <button class="btn btn-workly" onclick="toggleEditMode()" id="editBtn">
+                                            ✏️ Editar Perfil
+                                        </button>
+                                        <button class="btn btn-success d-none" onclick="saveProfile()" id="saveBtn">
+                                            💾 Guardar Cambios
+                                        </button>
+                                        <button class="btn btn-outline-danger d-none" onclick="cancelEdit()" id="cancelBtn">
+                                            ❌ Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección de Publicaciones -->
+                            <div class="publications-section">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h4 class="section-title mb-0">📝 Mis Publicaciones</h4>
+                                    <button class="btn btn-workly" onclick="goToCreatePublication()">
+                                        ➕ Nueva Publicación
+                                    </button>
+                                </div>
+                                
+                                <div id="publicationsContainer">
+                                    <div class="text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Cargando publicaciones...</span>
+                                        </div>
+                                        <p class="text-muted mt-2">Cargando tus publicaciones...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </footer>
+
+        <!-- Modal de éxito -->
+        <div class="modal fade" id="successModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">✅ Éxito</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p id="successMessage">Los cambios se han guardado correctamente.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Aceptar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de confirmación para eliminar -->
+        <div class="modal fade" id="deleteModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">🗑️ Eliminar Publicación</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>¿Estás seguro de que quieres eliminar esta publicación? Esta acción no se puede deshacer.</p>
+                        <p class="fw-bold" id="deletePublicationTitle"></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Eliminar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="bg-dark text-white py-4 mt-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>🚀 WORKLY</h5>
+                        <p class="text-muted">Tu plataforma de confianza para servicios profesionales</p>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        <p class="text-muted">&copy; 2024 WORKLY. Todos los derechos reservados.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const BACKEND_URL = 'http://127.0.0.1:8001';
         let originalUserData = null;
         let isEditMode = false;
+        let userPublications = [];
+        let publicationToDelete = null;
 
         // Modales de Bootstrap
         const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
 
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuthentication();
+        // Verificar autenticación ANTES de cargar la página
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuthentication();
         });
 
         // Verificar si el usuario está autenticado
@@ -237,12 +375,70 @@
             const token = localStorage.getItem('access_token');
             
             if (!token) {
-                window.location.href = "/login/";
+                redirectToLogin();
                 return;
             }
 
             try {
-                const response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                // Usar Promise.race para agregar timeout
+                const response = await Promise.race([
+                    fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Timeout')), 5000)
+                    )
+                ]);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const responseData = await response.json();
+                const userData = responseData.data || responseData;
+                
+                localStorage.setItem('user_data', JSON.stringify(userData));
+                originalUserData = {...userData};
+                
+                // Una vez verificado, mostrar el contenido
+                showMainContent();
+                showAuthenticatedUI();
+                displayUserProfile(userData);
+                
+                // Cargar publicaciones DESPUÉS de tener los datos del usuario
+                await loadUserPublications();
+                
+            } catch (error) {
+                console.error('Error verificando autenticación:', error);
+                redirectToLogin();
+            }
+        }
+
+        // Mostrar contenido principal
+        function showMainContent() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('mainContent').style.display = 'block';
+        }
+
+        // Redirigir al login
+        function redirectToLogin() {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('user_data');
+            window.location.href = "/login/";
+        }
+
+        // Cargar publicaciones del usuario
+        async function loadUserPublications() {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/publicidades/`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
@@ -250,23 +446,186 @@
                     }
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Manejar diferentes formatos de respuesta
+                    let allPublications = [];
+                    if (Array.isArray(data)) {
+                        allPublications = data;
+                    } else if (data.results && Array.isArray(data.results)) {
+                        allPublications = data.results;
+                    } else if (data.data && Array.isArray(data.data)) {
+                        allPublications = data.data;
+                    } else {
+                        allPublications = [];
+                    }
+                    
+                    // Obtener el ID del usuario actual
+                    const userData = JSON.parse(localStorage.getItem('user_data'));
+                    const userId = userData?.id_usuario;
+                    
+                    // Filtrar publicaciones para mostrar solo las del usuario actual
+                    userPublications = allPublications.filter(publication => {
+                        const publicationUserId = publication.id_usuario;
+                        return publicationUserId == userId;
+                    });
+                    
+                    renderUserPublications();
+                } else {
+                    showNoPublications();
                 }
-
-                const responseData = await response.json();
-                const userData = responseData.data;
-                
-                localStorage.setItem('user_data', JSON.stringify(userData));
-                originalUserData = {...userData}; // Guardar copia para cancelar edición
-                showAuthenticatedUI();
-                displayUserProfile(userData);
-                
             } catch (error) {
-                console.error('Error de autenticación:', error);
-                logout();
+                showNoPublications();
             }
         }
+
+        // Renderizar publicaciones del usuario
+        function renderUserPublications() {
+            const container = document.getElementById('publicationsContainer');
+            
+            if (!userPublications || userPublications.length === 0) {
+                showNoPublications();
+                return;
+            }
+
+            let publicationsHTML = '';
+            
+            userPublications.forEach(publication => {
+                const statusClass = getStatusClass(publication.estado_publicacion);
+                const statusText = getStatusText(publication.estado_publicacion);
+                const fecha = formatDate(publication.fecha_publicacion);
+                const publicationId = publication.id_publicidad || publication.id;
+                
+                publicationsHTML += `
+                    <div class="publication-card">
+                        <div class="publication-header">
+                            <div class="flex-grow-1">
+                                <div class="publication-title">${publication.titulo_publicidad}</div>
+                                <div class="text-muted small">Publicado el: ${fecha}</div>
+                            </div>
+                            <span class="publication-status ${statusClass}">${statusText}</span>
+                        </div>
+                        
+                        <p class="text-muted mb-2">${publication.descripcion_detallada}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="text-muted small">
+                                <strong>Ubicación:</strong> ${publication.ubicacion || 'No especificada'}
+                            </div>
+                            <div class="publication-actions">
+                                <button class="btn btn-outline-primary btn-sm" onclick="editPublication(${publicationId})">
+                                    ✏️ Editar
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="confirmDeletePublication(${publicationId}, '${publication.titulo_publicidad}')">
+                                    🗑️ Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = publicationsHTML;
+        }
+
+        // Mostrar mensaje cuando no hay publicaciones
+        function showNoPublications() {
+            const container = document.getElementById('publicationsContainer');
+            container.innerHTML = `
+                <div class="no-publications">
+                    <div class="mb-3">📭</div>
+                    <h5>No tienes publicaciones aún</h5>
+                    <p class="text-muted">Crea tu primera publicación para mostrar tus servicios</p>
+                    <button class="btn btn-workly mt-2" onclick="goToCreatePublication()">
+                        ➕ Crear Primera Publicación
+                    </button>
+                </div>
+            `;
+        }
+
+        // Obtener clase CSS para el estado
+        function getStatusClass(status) {
+            switch(status) {
+                case 'activa': return 'status-active';
+                case 'pausada': return 'status-paused';
+                case 'eliminada': return 'status-inactive';
+                default: return 'status-inactive';
+            }
+        }
+
+        // Obtener texto para el estado
+        function getStatusText(status) {
+            switch(status) {
+                case 'activa': return 'Activa';
+                case 'pausada': return 'Pausada';
+                case 'eliminada': return 'Eliminada';
+                default: return status;
+            }
+        }
+
+        // Formatear fecha
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return date.toLocaleDateString('es-ES', options);
+            } catch (error) {
+                return 'Fecha no disponible';
+            }
+        }
+
+        // Ir a crear nueva publicación
+        function goToCreatePublication() {
+            window.location.href = "/publicarme/";
+        }
+
+        // Editar publicación
+        function editPublication(publicationId) {
+            window.location.href = `/editar-publicacion/${publicationId}/`;
+        }
+
+        // Confirmar eliminación de publicación
+        function confirmDeletePublication(publicationId, publicationTitle) {
+            publicationToDelete = publicationId;
+            document.getElementById('deletePublicationTitle').textContent = publicationTitle;
+            deleteModal.show();
+        }
+
+        // Eliminar publicación
+        async function deletePublication() {
+            if (!publicationToDelete) return;
+
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                alert('Error: No estás autenticado');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/publicidades/${publicationToDelete}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    await loadUserPublications();
+                    deleteModal.hide();
+                    document.getElementById('successMessage').textContent = 'Publicación eliminada correctamente.';
+                    successModal.show();
+                } else {
+                    throw new Error('Error al eliminar la publicación');
+                }
+            } catch (error) {
+                alert('❌ Error al eliminar la publicación');
+            }
+        }
+
+        // Configurar evento de eliminación
+        document.getElementById('confirmDeleteBtn').addEventListener('click', deletePublication);
 
         // Mostrar datos del perfil del usuario
         function displayUserProfile(user) {
@@ -328,7 +687,6 @@
             isEditMode = !isEditMode;
             
             if (isEditMode) {
-                // Entrar en modo edición
                 document.querySelectorAll('.info-value').forEach(el => el.classList.add('d-none'));
                 document.querySelectorAll('.edit-input, .edit-textarea').forEach(el => el.classList.remove('d-none'));
                 document.getElementById('editBtn').classList.add('d-none');
@@ -336,7 +694,6 @@
                 document.getElementById('cancelBtn').classList.remove('d-none');
                 document.getElementById('backBtn').classList.add('d-none');
             } else {
-                // Salir del modo edición
                 cancelEdit();
             }
         }
@@ -351,7 +708,6 @@
             document.getElementById('cancelBtn').classList.add('d-none');
             document.getElementById('backBtn').classList.remove('d-none');
             
-            // Restaurar datos originales
             if (originalUserData) {
                 displayUserProfile(originalUserData);
             }
@@ -365,7 +721,6 @@
                 return;
             }
 
-            // Preparar datos para enviar
             const updatedData = {
                 nombre_completo: document.getElementById('editFullName').value.trim(),
                 correo_electronico: document.getElementById('editEmail').value.trim(),
@@ -374,11 +729,7 @@
                 descripcion_perfil: document.getElementById('editDescription').value.trim()
             };
 
-            console.log('📤 Enviando datos actualizados:', updatedData);
-            console.log('🎯 Tipo de usuario seleccionado:', updatedData.tipo_usuario);
-
             try {
-                // PRIMERO: Intentar con PUT
                 let response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
                     method: 'PUT',
                     headers: {
@@ -388,11 +739,7 @@
                     body: JSON.stringify(updatedData)
                 });
 
-                console.log('📨 PUT Response status:', response.status);
-
-                // SEGUNDO: Si PUT falla, intentar con PATCH
                 if (!response.ok) {
-                    console.log('🔄 PUT falló, intentando con PATCH...');
                     response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
                         method: 'PATCH',
                         headers: {
@@ -401,12 +748,9 @@
                         },
                         body: JSON.stringify(updatedData)
                     });
-                    console.log('📨 PATCH Response status:', response.status);
                 }
 
-                // TERCERO: Si ambos fallan, intentar endpoint alternativo
                 if (!response.ok) {
-                    console.log('🔄 Endpoint principal falló, intentando endpoint alternativo...');
                     response = await fetch(`${BACKEND_URL}/usuarios/me/`, {
                         method: 'PUT',
                         headers: {
@@ -415,66 +759,38 @@
                         },
                         body: JSON.stringify(updatedData)
                     });
-                    console.log('📨 Alternativo Response status:', response.status);
                 }
 
                 if (response.ok) {
                     const responseData = await response.json();
-                    console.log('✅ Datos guardados correctamente:', responseData);
-                    
                     const userData = responseData.data || responseData;
                     
-                    // Actualizar datos locales
                     localStorage.setItem('user_data', JSON.stringify(userData));
                     originalUserData = {...userData};
                     
-                    // Mostrar mensaje de éxito
                     document.getElementById('successMessage').textContent = 'Tu perfil se ha actualizado correctamente.';
                     successModal.show();
                     
-                    // Salir del modo edición
                     cancelEdit();
-                    
-                    // Actualizar la interfaz
                     displayUserProfile(userData);
                     showAuthenticatedUI();
                     
                 } else {
-                    // Obtener detalles del error
+                    const errorData = await response.json();
                     let errorMessage = 'Error al guardar los cambios';
-                    let errorDetails = '';
                     
-                    try {
-                        const errorData = await response.json();
-                        console.error('❌ Error response:', errorData);
-                        
-                        if (errorData.detail) {
-                            errorMessage = errorData.detail;
-                        } else if (errorData.error) {
-                            errorMessage = errorData.error;
-                        } else if (errorData.message) {
-                            errorMessage = errorData.message;
-                        }
-                        
-                        // Mostrar errores de campos específicos
-                        if (errorData.tipo_usuario) {
-                            errorDetails = `Tipo de usuario: ${errorData.tipo_usuario.join(', ')}`;
-                        } else if (errorData.errors && errorData.errors.tipo_usuario) {
-                            errorDetails = `Tipo de usuario: ${errorData.errors.tipo_usuario.join(', ')}`;
-                        }
-                        
-                    } catch (parseError) {
-                        console.error('Error parsing error response:', parseError);
-                        errorMessage = `Error ${response.status}: ${response.statusText}`;
+                    if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    } else if (errorData.error) {
+                        errorMessage = errorData.error;
+                    } else if (errorData.message) {
+                        errorMessage = errorData.message;
                     }
                     
-                    throw new Error(errorMessage + (errorDetails ? '\n' + errorDetails : ''));
+                    throw new Error(errorMessage);
                 }
                 
             } catch (error) {
-                console.error('❌ Error guardando perfil:', error);
-                
-                // Manejo específico de errores de tipo de usuario
                 if (error.message.includes('tipo_usuario') || error.message.includes('tipo de usuario')) {
                     alert('❌ No se puede cambiar el tipo de usuario. Esta opción puede estar restringida.');
                 } else if (error.message.includes('Failed to fetch')) {
@@ -495,16 +811,12 @@
                 try {
                     const user = JSON.parse(userData);
                     userName = user.nombre_completo || user.correo_electronico || 'Usuario';
-                    
-                    // Determinar el tipo de membresía del usuario
-                    // Esto debería venir del backend, por ahora simulamos con datos locales
                     membership = user.membresia || localStorage.getItem('user_membership') || 'Visitante';
                 } catch (e) {
                     console.error('Error parsing user data:', e);
                 }
             }
             
-            // Actualizar nombre de usuario y membresía
             document.getElementById('userName').textContent = userName;
             updateMembershipBadge(membership);
             
@@ -517,10 +829,8 @@
             const badge = document.getElementById('membershipBadge');
             badge.textContent = membership;
             
-            // Remover todas las clases de membresía
             badge.classList.remove('membership-basic', 'membership-premium', 'membership-enterprise', 'membership-visitante');
             
-            // Aplicar la clase correspondiente
             switch(membership.toLowerCase()) {
                 case 'básica':
                     badge.classList.add('membership-basic');

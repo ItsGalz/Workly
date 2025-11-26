@@ -11,5 +11,6 @@ urlpatterns = [
 
      # ✅ NUEVAS RUTAS PARA EL FRONTEND
     path('memberships/', views.memberships_view, name='memberships'),
+    path('payment/', views.payment_page, name='payment'),
     
 ]

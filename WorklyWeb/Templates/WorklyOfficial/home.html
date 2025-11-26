@@ -58,11 +58,6 @@
             background: linear-gradient(135deg, #34495e 0%, #2980b9 100%);
             color: white;
         }
-        .category-icon {
-            font-size: 1.8rem;
-            margin-bottom: 0.8rem;
-            color: #3498db;
-        }
         .user-welcome {
             color: #2c3e50;
             font-weight: 500;
@@ -97,52 +92,37 @@
         .show-more-btn:hover {
             text-decoration: underline;
         }
-        
-        /* Nuevos estilos para las páginas de categorías */
-        .category-page {
-            display: none;
+        .text-truncate-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
-        .category-header {
-            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
-            color: white;
-            padding: 2rem 0;
-            margin-bottom: 2rem;
-        }
-        .back-button {
-            background: rgba(255,255,255,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        .back-button:hover {
-            background: rgba(255,255,255,0.3);
-            color: white;
-        }
-        .service-item {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: white;
-        }
-        .service-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .professional-card {
-            border-left: 4px solid #2ecc71;
-        }
-        .service-features {
-            font-size: 0.9rem;
-            color: #6c757d;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
         }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p>Verificando autenticación...</p>
+        </div>
+    </div>
+
     <!-- Modal para requerir login -->
     <div class="modal fade" id="loginRequiredModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -187,7 +167,7 @@
     </nav>
 
     <!-- Página Principal -->
-    <div id="mainPage">
+    <div id="mainPage" style="display: none;">
         <!-- Hero Section -->
         <section class="hero-section">
             <div class="container text-center">
@@ -206,56 +186,13 @@
                             <h5 class="mb-0">📋 Categorías</h5>
                         </div>
                         <div class="card-body">
-                            <div class="list-group list-group-flush">
-                                <!-- Primeras 5 categorías visibles -->
-                                <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('electricidad')">
-                                    ⚡ Electricidad
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('construccion')">
-                                    🧱 Construcción
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('plomeria')">
-                                    🔧 Plomería
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('carpinteria')">
-                                    🛠️ Carpintería
-                                </a>
-                                <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('refrigeracion')">
-                                    ❄️ Refrigeración / Aire Acondicionado
-                                </a>
-                                
-                                <!-- Categorías adicionales (ocultas inicialmente) -->
-                                <div class="more-categories" id="moreCategories">
-                                    <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('mecanica')">
-                                        🚗 Mecánica automotriz
-                                    </a>
-                                    <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('turismo')">
-                                        🧳 Turismo / Guías / Hotelería
-                                    </a>
-                                    <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('limpieza')">
-                                        🏡 Limpieza
-                                    </a>
-                                    <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('reposteria')">
-                                        🎂 Repostería
-                                    </a>
-                                    <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('educacion')">
-                                        🎓 Tutorías / Educación
-                                    </a>
-                                    <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('cuidado')">
-                                        👶 Cuidado infantil / Adultos mayores
-                                    </a>
-                                    <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('belleza')">
-                                        💇 Belleza
-                                    </a>
-                                    <a href="#" class="list-group-item list-group-item-action border-0" onclick="showCategoryPage('otros')">
-                                        🔮 Otros
-                                    </a>
+                            <div class="list-group list-group-flush" id="categoriesList">
+                                <div class="text-center">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Cargando categorías...</span>
+                                    </div>
+                                    <small class="text-muted">Cargando categorías...</small>
                                 </div>
-                                
-                                <!-- Botón para mostrar más categorías -->
-                                <button class="show-more-btn mt-2" onclick="toggleMoreCategories()">
-                                    📂 Ver más categorías
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -272,453 +209,47 @@
                         </div>
                     </div>
 
-                    <!-- Empresas Destacadas -->
-                    <div class="row">
-                        <!-- Diamantito Joyas -->
-                        <div class="col-md-6">
-                            <div class="card service-card h-100">
-                                <div class="card-header position-relative">
-                                    <h5 class="card-title mb-0">💎 Diamantito Joyas</h5>
-                                    <span class="login-badge">INICIA SESIÓN</span>
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text text-muted">
-                                        Empresa dedicada a la venta de joyería de oro, plata, acero, diamantes, 
-                                        además de Relojería y taller de reparación y fabricación de joyería.
-                                    </p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="badge bg-warning text-dark">⭐ 4.8/5</span>
-                                        <span class="text-muted">🔮 Otros</span>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-white border-0">
-                                    <button class="btn btn-outline-secondary btn-sm" onclick="showDetails()">Más Información</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Ferretería Industrial Velasco -->
-                        <div class="col-md-6">
-                            <div class="card service-card h-100">
-                                <div class="card-header position-relative">
-                                    <h5 class="card-title mb-0">🏗️ Ferretería Industrial Velasco</h5>
-                                    <span class="login-badge">INICIA SESIÓN</span>
-                                </div>
-                                <div class="card-body">
-                                    <p class="card-text text-muted">
-                                        Tenemos las mejores marcas de material para construcción a precios 
-                                        sumamente accesibles. Todo para tu proyecto de construcción.
-                                    </p>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="badge bg-warning text-dark">⭐ 4.6/5</span>
-                                        <span class="text-muted">🧱 Construcción</span>
-                                    </div>
-                                </div>
-                                <div class="card-footer bg-white border-0">
-                                    <button class="btn btn-outline-secondary btn-sm" onclick="showDetails()">Más Información</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Talentos Disponibles -->
-                    <div class="row mt-4">
+                    <!-- Empresas/Servicios Destacados -->
+                    <div class="row mb-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h5 class="mb-0">👥 Talentos Disponibles</h5>
+                                    <h5 class="mb-0">🏢 Servicios y Empresas Destacadas</h5>
                                 </div>
                                 <div class="card-body">
-                                    <div class="row">
-                                        <!-- Jose Rivera -->
-                                        <div class="col-md-4 mb-3">
-                                            <div class="card talent-card h-100">
-                                                <div class="card-body">
-                                                    <h6 class="card-title">👨‍💼 Jose Rivera</h6>
-                                                    <p class="card-text small text-muted">Especialista en electricidad residencial e industrial</p>
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <span class="badge bg-primary">⚡ Electricidad</span>
-                                                        <small class="text-muted">⭐ 4.9</small>
-                                                    </div>
-                                                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="showTalentDetails()">Más Información</button>
-                                                </div>
+                                    <div class="row" id="empresasContainer">
+                                        <div class="col-12 text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Cargando servicios...</span>
                                             </div>
-                                        </div>
-
-                                        <!-- Javier García -->
-                                        <div class="col-md-4 mb-3">
-                                            <div class="card talent-card h-100">
-                                                <div class="card-body">
-                                                    <h6 class="card-title">👨‍🔧 Javier García</h6>
-                                                    <p class="card-text small text-muted">Experto en plomería y reparaciones generales</p>
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <span class="badge bg-info text-dark">🔧 Plomería</span>
-                                                        <small class="text-muted">⭐ 4.7</small>
-                                                    </div>
-                                                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="showTalentDetails()">Más Información</button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- María Perez -->
-                                        <div class="col-md-4 mb-3">
-                                            <div class="card talent-card h-100">
-                                                <div class="card-body">
-                                                    <h6 class="card-title">👩‍🎨 María Perez</h6>
-                                                    <p class="card-text small text-muted">Profesional en pintura residencial y decorativa</p>
-                                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                                        <span class="badge bg-warning text-dark">🎨 Pintura</span>
-                                                        <small class="text-muted">⭐ 4.8</small>
-                                                    </div>
-                                                    <button class="btn btn-outline-secondary btn-sm w-100" onclick="showTalentDetails()">Más Información</button>
-                                                </div>
-                                            </div>
+                                            <p class="text-muted mt-2">Cargando servicios disponibles...</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Páginas de Categorías (TODAS LAS CATEGORÍAS) -->
-    
-    <!-- Electricidad -->
-    <div id="electricidadPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="electricidadTitle">⚡ Electricidad</h1>
-                <p class="lead" id="electricidadDescription">Cargando servicios de electricidad...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="electricidadServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
+                    <!-- Talentos Humanos Disponibles -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">👥 Talentos Humanos Disponibles</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="talentosContainer">
+                                        <div class="col-12 text-center">
+                                            <div class="spinner-border" role="status">
+                                                <span class="visually-hidden">Cargando talentos...</span>
+                                            </div>
+                                            <p class="text-muted mt-2">Cargando talentos disponibles...</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <p>Cargando servicios de electricidad...</p>
                     </div>
-                </div>
-                <div class="col-lg-4" id="electricidadProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Construcción -->
-    <div id="construccionPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="construccionTitle">🧱 Construcción</h1>
-                <p class="lead" id="construccionDescription">Cargando servicios de construcción...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="construccionServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de construcción...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="construccionProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Plomería -->
-    <div id="plomeriaPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="plomeriaTitle">🔧 Plomería</h1>
-                <p class="lead" id="plomeriaDescription">Cargando servicios de plomería...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="plomeriaServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de plomería...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="plomeriaProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Carpintería -->
-    <div id="carpinteriaPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="carpinteriaTitle">🛠️ Carpintería</h1>
-                <p class="lead" id="carpinteriaDescription">Cargando servicios de carpintería...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="carpinteriaServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de carpintería...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="carpinteriaProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Refrigeración -->
-    <div id="refrigeracionPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="refrigeracionTitle">❄️ Refrigeración / Aire Acondicionado</h1>
-                <p class="lead" id="refrigeracionDescription">Cargando servicios de refrigeración...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="refrigeracionServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de refrigeración...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="refrigeracionProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Mecánica -->
-    <div id="mecanicaPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="mecanicaTitle">🚗 Mecánica automotriz</h1>
-                <p class="lead" id="mecanicaDescription">Cargando servicios de mecánica...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="mecanicaServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de mecánica...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="mecanicaProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Turismo -->
-    <div id="turismoPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="turismoTitle">🧳 Turismo / Guías / Hotelería</h1>
-                <p class="lead" id="turismoDescription">Cargando servicios de turismo...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="turismoServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de turismo...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="turismoProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Limpieza -->
-    <div id="limpiezaPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="limpiezaTitle">🏡 Limpieza</h1>
-                <p class="lead" id="limpiezaDescription">Cargando servicios de limpieza...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="limpiezaServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de limpieza...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="limpiezaProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Repostería -->
-    <div id="reposteriaPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="reposteriaTitle">🎂 Repostería</h1>
-                <p class="lead" id="reposteriaDescription">Cargando servicios de repostería...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="reposteriaServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de repostería...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="reposteriaProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Educación -->
-    <div id="educacionPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="educacionTitle">🎓 Tutorías / Educación</h1>
-                <p class="lead" id="educacionDescription">Cargando servicios de educación...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="educacionServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de educación...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="educacionProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cuidado -->
-    <div id="cuidadoPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="cuidadoTitle">👶 Cuidado infantil / Adultos mayores</h1>
-                <p class="lead" id="cuidadoDescription">Cargando servicios de cuidado...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="cuidadoServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de cuidado...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="cuidadoProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Belleza -->
-    <div id="bellezaPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="bellezaTitle">💇 Belleza</h1>
-                <p class="lead" id="bellezaDescription">Cargando servicios de belleza...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="bellezaServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando servicios de belleza...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="bellezaProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Otros -->
-    <div id="otrosPage" class="category-page">
-        <div class="category-header">
-            <div class="container">
-                <a href="#" class="back-button mb-3 d-inline-block" onclick="showMainPage()">← Volver al Inicio</a>
-                <h1 class="display-6 fw-bold" id="otrosTitle">🔮 Otros</h1>
-                <p class="lead" id="otrosDescription">Cargando otros servicios...</p>
-            </div>
-        </div>
-        <div class="container my-5">
-            <div class="row">
-                <div class="col-lg-8" id="otrosServices">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Cargando...</span>
-                        </div>
-                        <p>Cargando otros servicios...</p>
-                    </div>
-                </div>
-                <div class="col-lg-4" id="otrosProfessionals">
-                    <!-- Profesionales se cargarán aquí -->
                 </div>
             </div>
         </div>
@@ -749,30 +280,371 @@
         // Modal de Bootstrap
         const loginRequiredModal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
 
-        // Configuración de categorías
-        const CATEGORIES_CONFIG = {
-            'electricidad': { name: '⚡ Electricidad', description: 'Servicios eléctricos profesionales para hogares y empresas' },
-            'construccion': { name: '🧱 Construcción', description: 'Construcción, remodelación y obras civiles' },
-            'plomeria': { name: '🔧 Plomería', description: 'Servicios de fontanería y reparación de tuberías' },
-            'carpinteria': { name: '🛠️ Carpintería', description: 'Trabajos en madera y muebles personalizados' },
-            'refrigeracion': { name: '❄️ Refrigeración', description: 'Instalación y reparación de sistemas de refrigeración' },
-            'mecanica': { name: '🚗 Mecánica', description: 'Reparación y mantenimiento automotriz' },
-            'turismo': { name: '🧳 Turismo', description: 'Servicios turísticos, guías y hospedaje' },
-            'limpieza': { name: '🏡 Limpieza', description: 'Servicios de limpieza residencial y comercial' },
-            'reposteria': { name: '🎂 Repostería', description: 'Elaboración de postres y pasteles personalizados' },
-            'educacion': { name: '🎓 Educación', description: 'Tutorías y servicios educativos' },
-            'cuidado': { name: '👶 Cuidado', description: 'Cuidado de niños y adultos mayores' },
-            'belleza': { name: '💇 Belleza', description: 'Servicios de estética y cuidado personal' },
-            'otros': { name: '🔮 Otros', description: 'Otros servicios profesionales' }
-        };
+        // Variables globales
+        let categoriasData = [];
+        let publicidadesData = [];
+        let usuariosData = {};
 
-        // Verificar autenticación al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            checkAuthentication();
-            showMainPage();
+        // Verificar autenticación ANTES de cargar la página
+        document.addEventListener('DOMContentLoaded', async function() {
+            await checkAuthentication();
+            // Una vez verificada la autenticación, mostrar la página y cargar datos
+            document.getElementById('loadingOverlay').style.display = 'none';
+            document.getElementById('mainPage').style.display = 'block';
+            loadInitialData();
         });
 
-        // Verificar si el usuario está autenticado
+        // Cargar datos iniciales
+        async function loadInitialData() {
+            try {
+                await Promise.all([
+                    loadCategorias(),
+                    loadPublicidades(),
+                    loadUsuarios()
+                ]);
+                renderHomeContent();
+            } catch (error) {
+                console.error('Error cargando datos iniciales:', error);
+                showError('Error al cargar los datos');
+            }
+        }
+
+        // Cargar categorías desde la API
+        async function loadCategorias() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/categorias/`);
+                if (!response.ok) throw new Error('Error al cargar categorías');
+                
+                const data = await response.json();
+                console.log('📋 Datos de categorías recibidos:', data);
+                
+                // Manejar diferentes formatos de respuesta
+                if (Array.isArray(data)) {
+                    categoriasData = data;
+                } else if (data.results && Array.isArray(data.results)) {
+                    categoriasData = data.results;
+                } else if (data.data && Array.isArray(data.data)) {
+                    categoriasData = data.data;
+                } else {
+                    throw new Error('Formato de respuesta no reconocido');
+                }
+                
+                console.log('📋 Categorías procesadas:', categoriasData);
+                renderCategorias();
+            } catch (error) {
+                console.error('Error cargando categorías:', error);
+                throw error;
+            }
+        }
+
+        // Cargar publicidades desde la API
+        async function loadPublicidades() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/publicidades/`);
+                if (!response.ok) throw new Error('Error al cargar publicidades');
+                
+                const data = await response.json();
+                console.log('📢 Datos de publicidades recibidos:', data);
+                
+                // Manejar diferentes formatos de respuesta
+                if (Array.isArray(data)) {
+                    publicidadesData = data;
+                } else if (data.results && Array.isArray(data.results)) {
+                    publicidadesData = data.results;
+                } else if (data.data && Array.isArray(data.data)) {
+                    publicidadesData = data.data;
+                } else {
+                    throw new Error('Formato de respuesta no reconocido');
+                }
+                
+                console.log('📢 Publicidades procesadas:', publicidadesData);
+                
+            } catch (error) {
+                console.error('Error cargando publicidades:', error);
+                throw error;
+            }
+        }
+
+        // Cargar usuarios desde la API
+        async function loadUsuarios() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/usuarios/`);
+                if (!response.ok) throw new Error('Error al cargar usuarios');
+                
+                const data = await response.json();
+                console.log('👥 Datos de usuarios recibidos:', data);
+                
+                // Manejar diferentes formatos de respuesta
+                let usuariosArray = [];
+                if (Array.isArray(data)) {
+                    usuariosArray = data;
+                } else if (data.results && Array.isArray(data.results)) {
+                    usuariosArray = data.results;
+                } else if (data.data && Array.isArray(data.data)) {
+                    usuariosArray = data.data;
+                } else {
+                    throw new Error('Formato de respuesta no reconocido');
+                }
+                
+                // Crear un objeto para fácil acceso por ID
+                usuariosData = {};
+                usuariosArray.forEach(usuario => {
+                    const usuarioId = usuario.id_usuario || usuario.id;
+                    usuariosData[usuarioId] = usuario;
+                });
+                
+                console.log('👥 Usuarios procesados:', usuariosData);
+                
+            } catch (error) {
+                console.error('Error cargando usuarios:', error);
+                // No lanzamos error para que la página funcione aunque falle la carga de usuarios
+            }
+        }
+
+        // Función para obtener nombre de categoría por ID - VERSIÓN CORREGIDA
+        function getNombreCategoria(publicidad) {
+            console.log('🔍 Buscando categoría para publicidad:', publicidad);
+            
+            // PRIMERO intentar con id_categoria (que viene del serializer)
+            let categoriaId = publicidad.id_categoria;
+            
+            // Si no viene id_categoria, intentar con id_categoria_id
+            if (!categoriaId && publicidad.id_categoria_id) {
+                categoriaId = publicidad.id_categoria_id;
+            }
+            
+            // Si aún no hay categoría, mostrar mensaje de debug
+            if (!categoriaId) {
+                console.log('❌ Publicidad sin ID de categoría. Campos disponibles:', Object.keys(publicidad));
+                return 'Categoría no asignada';
+            }
+            
+            console.log('🔍 ID de categoría encontrado:', categoriaId);
+            
+            // Buscar en las categorías
+            const categoria = categoriasData.find(cat => {
+                const catId = cat.id_categoria || cat.id;
+                return catId == categoriaId;
+            });
+            
+            console.log('✅ Categoría encontrada:', categoria);
+            
+            return categoria ? categoria.nombre_categoria : 'Categoría no encontrada';
+        }
+
+        // Función para obtener nombre de usuario por ID
+        function getNombreUsuario(publicidad) {
+            // Usar id_usuario_id en lugar de id_usuario
+            const usuarioId = publicidad.id_usuario_id;
+            
+            // Si tiene usuario_nombre, usarlo directamente
+            if (publicidad.usuario_nombre) {
+                return publicidad.usuario_nombre;
+            }
+            
+            if (!usuarioId) {
+                return 'Usuario desconocido';
+            }
+            
+            const usuario = usuariosData[usuarioId];
+            return usuario ? (usuario.nombre_completo || usuario.correo_electronico) : `Usuario ${usuarioId}`;
+        }
+
+        // Renderizar categorías en el sidebar
+        function renderCategorias() {
+            const container = document.getElementById('categoriesList');
+            
+            if (!categoriasData || categoriasData.length === 0) {
+                container.innerHTML = '<div class="text-muted">No hay categorías disponibles</div>';
+                return;
+            }
+
+            let categoriasHTML = '';
+            const categoriasVisibles = categoriasData.slice(0, 5);
+            const categoriasOcultas = categoriasData.slice(5);
+
+            // Categorías visibles
+            categoriasVisibles.forEach(categoria => {
+                categoriasHTML += `
+                    <a href="#" class="list-group-item list-group-item-action border-0" 
+                       onclick="showCategoryPage(${categoria.id_categoria || categoria.id})">
+                        ${getCategoryIcon(categoria.nombre_categoria)} ${categoria.nombre_categoria}
+                    </a>
+                `;
+            });
+
+            // Categorías ocultas
+            if (categoriasOcultas.length > 0) {
+                categoriasHTML += `
+                    <div class="more-categories" id="moreCategories" style="display: none;">
+                        ${categoriasOcultas.map(categoria => `
+                            <a href="#" class="list-group-item list-group-item-action border-0" 
+                               onclick="showCategoryPage(${categoria.id_categoria || categoria.id})">
+                                ${getCategoryIcon(categoria.nombre_categoria)} ${categoria.nombre_categoria}
+                            </a>
+                        `).join('')}
+                    </div>
+                    <button class="show-more-btn mt-2" onclick="toggleMoreCategories()">
+                        📂 Ver más categorías
+                    </button>
+                `;
+            }
+
+            container.innerHTML = categoriasHTML;
+        }
+
+        // Renderizar contenido del home
+        function renderHomeContent() {
+            renderEmpresas();
+            renderTalentos();
+        }
+
+        // Renderizar empresas/servicios
+        function renderEmpresas() {
+            const container = document.getElementById('empresasContainer');
+            
+            // Mostrar la mitad de las publicidades como empresas (máximo 2)
+            const totalPublicidades = publicidadesData.length;
+            const cantidadEmpresas = Math.min(2, Math.floor(totalPublicidades / 2));
+            const empresas = publicidadesData.slice(0, cantidadEmpresas);
+
+            if (empresas.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center">
+                        <p class="text-muted">No hay servicios disponibles en este momento.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let empresasHTML = '';
+            
+            empresas.forEach(publicidad => {
+                // CORREGIDO: Usar las funciones corregidas
+                const categoriaNombre = getNombreCategoria(publicidad);
+                const nombreUsuario = getNombreUsuario(publicidad);
+                
+                empresasHTML += `
+                    <div class="col-md-6 mb-3">
+                        <div class="card service-card h-100">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">${publicidad.titulo_publicidad}</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text text-muted text-truncate-3">
+                                    ${publicidad.descripcion_detallada}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <span class="badge bg-primary">${categoriaNombre}</span>
+                                    <small class="text-muted">Publicado por: ${nombreUsuario}</small>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <small class="text-muted">${formatDate(publicidad.fecha_publicacion)}</small>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-white border-0">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="showDetails(${publicidad.id_publicidad})">
+                                    Más Información
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = empresasHTML;
+        }
+
+        // Renderizar talentos humanos
+        function renderTalentos() {
+            const container = document.getElementById('talentosContainer');
+            
+            // Mostrar el resto de las publicidades como talentos (mínimo 1)
+            const totalPublicidades = publicidadesData.length;
+            const cantidadEmpresas = Math.min(2, Math.floor(totalPublicidades / 2));
+            const talentos = publicidadesData.slice(cantidadEmpresas, totalPublicidades);
+
+            if (talentos.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center">
+                        <p class="text-muted">No hay talentos disponibles en este momento.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let talentosHTML = '';
+            
+            talentos.forEach(publicidad => {
+                // CORREGIDO: Usar las funciones corregidas
+                const categoriaNombre = getNombreCategoria(publicidad);
+                const nombreUsuario = getNombreUsuario(publicidad);
+                
+                talentosHTML += `
+                    <div class="col-md-4 mb-3">
+                        <div class="card talent-card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">${publicidad.titulo_publicidad}</h6>
+                                <p class="card-text small text-muted text-truncate-3">
+                                    ${publicidad.descripcion_detallada}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="badge bg-info text-dark">${categoriaNombre}</span>
+                                    <small class="text-muted">⭐ 4.5</small>
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted"><strong>Publicado por:</strong> ${nombreUsuario}</small>
+                                </div>
+                                <button class="btn btn-outline-secondary btn-sm w-100" 
+                                        onclick="showTalentDetails(${publicidad.id_publicidad})">
+                                    Más Información
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = talentosHTML;
+        }
+
+        // Función para obtener icono según categoría
+        function getCategoryIcon(categoriaNombre) {
+            const iconMap = {
+                'electricidad': '⚡',
+                'construcción': '🧱',
+                'plomería': '🔧',
+                'carpintería': '🛠️',
+                'refrigeración': '❄️',
+                'mecánica': '🚗',
+                'turismo': '🧳',
+                'limpieza': '🏡',
+                'repostería': '🎂',
+                'educación': '🎓',
+                'cuidado': '👶',
+                'belleza': '💇'
+            };
+
+            for (const [key, icon] of Object.entries(iconMap)) {
+                if (categoriaNombre.toLowerCase().includes(key)) {
+                    return icon;
+                }
+            }
+            return '🔮';
+        }
+
+        // Función para formatear fecha
+        function formatDate(dateString) {
+            try {
+                const date = new Date(dateString);
+                const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                return date.toLocaleDateString('es-ES', options);
+            } catch (error) {
+                return 'Fecha no disponible';
+            }
+        }
+
+        // VERIFICACIÓN DE AUTENTICACIÓN MEJORADA
         async function checkAuthentication() {
             const token = localStorage.getItem('access_token');
             
@@ -782,18 +654,21 @@
             }
 
             try {
-                const response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
+                // Usamos Promise.race para agregar un timeout
+                const response = await Promise.race([
+                    fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Timeout')), 3000)
+                    )
+                ]);
 
                 if (response.ok) {
-                    const responseData = await response.json();
-                    const userData = responseData.data;
-                    localStorage.setItem('user_data', JSON.stringify(userData));
                     showAuthenticatedUI();
                 } else {
                     localStorage.removeItem('access_token');
@@ -804,11 +679,11 @@
                 
             } catch (error) {
                 console.error('Error verificando autenticación:', error);
+                // En caso de error, mostramos la UI pública
                 showPublicUI();
             }
         }
 
-        // Mostrar interfaz para usuarios autenticados
         function showAuthenticatedUI() {
             const userData = localStorage.getItem('user_data');
             let userName = 'Usuario';
@@ -831,7 +706,6 @@
             document.getElementById('publicContent').style.display = 'none';
         }
 
-        // Mostrar interfaz para usuarios públicos
         function showPublicUI() {
             document.getElementById('userWelcome').textContent = '👋 Bienvenido a WORKLY';
             document.getElementById('authButtons').style.display = 'block';
@@ -842,7 +716,6 @@
             document.getElementById('publicContent').style.display = 'flex';
         }
 
-        // Función para mostrar/ocultar más categorías
         function toggleMoreCategories() {
             const moreCategories = document.getElementById('moreCategories');
             const button = document.querySelector('.show-more-btn');
@@ -856,7 +729,6 @@
             }
         }
 
-        // Función para requerir login
         function requireLogin() {
             const token = localStorage.getItem('access_token');
             if (!token) {
@@ -866,44 +738,28 @@
             return true;
         }
 
-        // Funciones que requieren login
-        function showDetails() {
+        function showDetails(publicidadId) {
             if (requireLogin()) {
-                alert('🔧 Funcionalidad de detalles en desarrollo...');
+                alert(`🔧 Ver detalles de publicidad ID: ${publicidadId}`);
             }
         }
 
-        function showTalentDetails() {
+        function showTalentDetails(publicidadId) {
             if (requireLogin()) {
-                alert('🔧 Funcionalidad de detalles de talento en desarrollo...');
+                alert(`🔧 Ver detalles de talento ID: ${publicidadId}`);
             }
         }
 
-        // Función para mostrar página de categoría
-        async function showCategoryPage(category) {
+        function showCategoryPage(categoriaId) {
             if (requireLogin()) {
-                document.querySelectorAll('.category-page').forEach(page => {
-                    page.style.display = 'none';
-                });
-                document.getElementById('mainPage').style.display = 'none';
-                
-                const categoryPage = document.getElementById(category + 'Page');
-                if (categoryPage) {
-                    categoryPage.style.display = 'block';
-                    await loadCategoryData(category);
-                }
+                alert(`🔧 Navegar a categoría ID: ${categoriaId}`);
             }
         }
 
-        // Función para mostrar página principal
         function showMainPage() {
-            document.querySelectorAll('.category-page').forEach(page => {
-                page.style.display = 'none';
-            });
             document.getElementById('mainPage').style.display = 'block';
         }
 
-        // Función para cerrar sesión
         function logout() {
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
@@ -911,172 +767,6 @@
             window.location.href = "/logout/";
         }
 
-        // ✅ CARGAR DATOS DE CATEGORÍA DESDE LA API
-        async function loadCategoryData(categorySlug) {
-            try {
-                const config = CATEGORIES_CONFIG[categorySlug];
-                if (config) {
-                    document.getElementById(`${categorySlug}Title`).textContent = config.name;
-                    document.getElementById(`${categorySlug}Description`).textContent = config.description;
-                }
-
-                // Simular carga de datos (reemplazar con llamadas reales a la API)
-                await simulateDataLoad(categorySlug);
-                
-            } catch (error) {
-                console.error('Error cargando datos de categoría:', error);
-                showError('Error al cargar los datos');
-            }
-        }
-
-        // ✅ SIMULAR CARGA DE DATOS (REEMPLAZAR CON API REAL)
-        async function simulateDataLoad(categorySlug) {
-            // Simular delay de red
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const servicesContainer = document.getElementById(`${categorySlug}Services`);
-            const professionalsContainer = document.getElementById(`${categorySlug}Professionals`);
-
-            // Datos de ejemplo - reemplazar con datos reales de la API
-            const sampleServices = getSampleServices(categorySlug);
-            const sampleProfessionals = getSampleProfessionals(categorySlug);
-
-            renderServices(sampleServices, categorySlug);
-            renderProfessionals(sampleProfessionals, categorySlug);
-        }
-
-        // ✅ DATOS DE EJEMPLO (REEMPLAZAR CON API REAL)
-        function getSampleServices(category) {
-            const services = {
-                'electricidad': [
-                    { title: 'Instalación Eléctrica Residencial', description: 'Instalación completa de sistemas eléctricos para viviendas', price: 'Desde $150', rating: 4.9, features: ['Cableado', 'Tableros', 'Tomas'] },
-                    { title: 'Mantenimiento Industrial', description: 'Mantenimiento preventivo para sistemas industriales', price: 'Desde $300', rating: 4.8, features: ['Diagnóstico', 'Reparación'] }
-                ],
-                'construccion': [
-                    { title: 'Construcción Residencial', description: 'Construcción de viviendas completas', price: 'Desde $50,000', rating: 4.8, features: ['Planos', 'Permisos'] },
-                    { title: 'Remodelación Integral', description: 'Transformación de espacios existentes', price: 'Desde $15,000', rating: 4.7, features: ['Diseño', 'Ejecución'] }
-                ],
-                'plomeria': [
-                    { title: 'Reparación de Tuberías', description: 'Reparación y cambio de tuberías dañadas', price: 'Desde $80', rating: 4.7, features: ['Diagnóstico', 'Materiales'] }
-                ],
-                // ... agregar más categorías según necesidad
-            };
-            
-            return services[category] || [
-                { title: 'Servicio Ejemplo', description: 'Descripción del servicio disponible', price: 'Consultar', rating: 4.5, features: ['Característica 1', 'Característica 2'] }
-            ];
-        }
-
-        function getSampleProfessionals(category) {
-            const professionals = {
-                'electricidad': [
-                    { name: 'Jose Rivera', rating: 4.9, experience: '15 años', jobs: 127 },
-                    { name: 'Carlos González', rating: 4.8, experience: '12 años', jobs: 89 }
-                ],
-                'construccion': [
-                    { name: 'Miguel López', rating: 4.8, experience: '20 años', jobs: 156 }
-                ]
-                // ... agregar más según necesidad
-            };
-            
-            return professionals[category] || [
-                { name: 'Profesional Ejemplo', rating: 4.5, experience: '5 años', jobs: 23 }
-            ];
-        }
-
-        // ✅ RENDERIZAR SERVICIOS
-        function renderServices(services, categorySlug) {
-            const container = document.getElementById(`${categorySlug}Services`);
-            
-            if (!services || services.length === 0) {
-                container.innerHTML = `
-                    <div class="alert alert-info">
-                        No hay servicios disponibles en esta categoría por el momento.
-                    </div>
-                `;
-                return;
-            }
-            
-            let servicesHTML = '';
-            
-            services.forEach(service => {
-                servicesHTML += `
-                    <div class="service-item">
-                        <h4>${service.title}</h4>
-                        <p>${service.description}</p>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge bg-success">Precio: ${service.price}</span>
-                            <span class="badge bg-warning text-dark">⭐ ${service.rating}/5</span>
-                        </div>
-                        ${service.features ? `
-                            <div class="service-features mt-2">
-                                <small><strong>Incluye:</strong> ${service.features.join(', ')}</small>
-                            </div>
-                        ` : ''}
-                        <button class="btn btn-workly btn-sm mt-2" onclick="viewServiceDetails('${categorySlug}')">
-                            Ver Detalles
-                        </button>
-                    </div>
-                `;
-            });
-            
-            container.innerHTML = servicesHTML;
-        }
-
-        // ✅ RENDERIZAR PROFESIONALES
-        function renderProfessionals(professionals, categorySlug) {
-            const container = document.getElementById(`${categorySlug}Professionals`);
-            
-            if (!professionals || professionals.length === 0) {
-                container.innerHTML = '';
-                return;
-            }
-            
-            let professionalsHTML = `
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">👷 Profesionales Destacados</h5>
-                    </div>
-                    <div class="card-body">
-            `;
-            
-            professionals.forEach(professional => {
-                const initials = professional.name.split(' ').map(n => n[0]).join('').toUpperCase();
-                
-                professionalsHTML += `
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="flex-shrink-0">
-                            <div style="width: 40px; height: 40px; background: #3498db; border-radius: 50%; 
-                                        display: flex; align-items: center; justify-content: center; 
-                                        color: white; font-weight: bold;">
-                                ${initials}
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-0">${professional.name}</h6>
-                            <small class="text-muted">⭐ ${professional.rating} • ${professional.experience}</small>
-                            <br>
-                            <small class="text-success">${professional.jobs} trabajos completados</small>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            professionalsHTML += `
-                    </div>
-                </div>
-            `;
-            
-            container.innerHTML = professionalsHTML;
-        }
-
-        // ✅ VER DETALLES DE SERVICIO
-        function viewServiceDetails(category) {
-            alert(`🔧 Ver detalles de servicio en ${CATEGORIES_CONFIG[category].name}`);
-            // Aquí puedes implementar la lógica para mostrar detalles completos
-        }
-
-        // ✅ MOSTRAR ERROR
         function showError(message) {
             alert(`❌ Error: ${message}`);
         }

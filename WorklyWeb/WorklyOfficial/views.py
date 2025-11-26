@@ -70,3 +70,18 @@ def memberships_view(request):
 def publicarme_view(request):
     """Página para publicar servicios"""
     return render(request, 'WorklyOfficial/publicarme.html')  # ✅ Nueva vista
+
+def payment_page(request):
+    """Página de pago - Sin verificación de autenticación Django"""
+    # Obtener el ID de la membresía
+    membership_id = request.GET.get('id')
+    
+    if not membership_id:
+        # Si no hay ID, redirigir a membresías
+        return redirect('memberships')
+    
+    context = {
+        'membership_id': membership_id,
+    }
+    
+    return render(request, 'WorklyOfficial/payment.html', context)

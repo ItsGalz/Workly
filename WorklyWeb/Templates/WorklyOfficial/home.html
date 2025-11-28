@@ -142,6 +142,65 @@
         .badge-talento {
             background-color: #3498db;
         }
+        .rating-stars {
+            color: #ffc107;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .rating-stars .star {
+            transition: all 0.2s ease;
+        }
+        .rating-stars .star:hover {
+            transform: scale(1.2);
+        }
+        .info-item {
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            color: #495057;
+        }
+        .rating-item {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border-left: 3px solid #3498db;
+        }
+        .rating-user {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .rating-date {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        .card-footer {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-rating {
+            background: linear-gradient(135deg, #ffc107 0%, #ff8c00 100%);
+            border: none;
+            color: white;
+        }
+        .btn-rating:hover {
+            background: linear-gradient(135deg, #e0a800 0%, #e67e00 100%);
+            color: white;
+        }
+        .average-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -172,6 +231,80 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <a href="/login/" class="btn btn-workly">Iniciar Sesión</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para detalles de empresa/servicio -->
+    <div class="modal fade" id="empresaDetailsModal" tabindex="-1" aria-labelledby="empresaDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="empresaDetailsModalLabel">Detalles del Servicio</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="empresaDetailsContent">
+                    <!-- Contenido dinámico se cargará aquí -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para detalles de talento -->
+    <div class="modal fade" id="talentoDetailsModal" tabindex="-1" aria-labelledby="talentoDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="talentoDetailsModalLabel">Detalles del Talento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="talentoDetailsContent">
+                    <!-- Contenido dinámico se cargará aquí -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para calificar -->
+    <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ratingModalLabel">Calificar Talento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="ratingContent">
+                    <!-- Contenido dinámico se cargará aquí -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-workly" id="confirmRatingBtn">Confirmar Calificación</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para calificar empresa -->
+    <div class="modal fade" id="ratingEmpresaModal" tabindex="-1" aria-labelledby="ratingEmpresaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="ratingEmpresaModalLabel">Calificar Empresa</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="ratingEmpresaContent">
+                    <!-- Contenido dinámico se cargará aquí -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-workly" id="confirmEmpresaRatingBtn">Confirmar Calificación</button>
                 </div>
             </div>
         </div>
@@ -347,14 +480,25 @@
         // URLs CONFIGURADAS
         const BACKEND_URL = 'http://127.0.0.1:8001';
 
-        // Modal de Bootstrap
+        // Modales de Bootstrap
         const loginRequiredModal = new bootstrap.Modal(document.getElementById('loginRequiredModal'));
+        const empresaDetailsModal = new bootstrap.Modal(document.getElementById('empresaDetailsModal'));
+        const talentoDetailsModal = new bootstrap.Modal(document.getElementById('talentoDetailsModal'));
+        const ratingModal = new bootstrap.Modal(document.getElementById('ratingModal'));
+        const ratingEmpresaModal = new bootstrap.Modal(document.getElementById('ratingEmpresaModal'));
 
         // Variables globales
         let categoriasData = [];
         let publicidadesData = [];
         let usuariosData = {};
         let categoriaSeleccionada = null;
+        let currentRating = 0;
+        let currentPublicidadId = null;
+        let currentRatingType = null; // 'talento' o 'empresa'
+        
+        // Almacenamiento de calificaciones (simulado - en producción usarías una base de datos)
+        let calificacionesData = JSON.parse(localStorage.getItem('workly_calificaciones')) || {};
+        let calificacionesEmpresasData = JSON.parse(localStorage.getItem('workly_calificaciones_empresas')) || {};
 
         // Verificar autenticación ANTES de cargar la página
         document.addEventListener('DOMContentLoaded', async function() {
@@ -603,6 +747,18 @@
             }
         }
 
+        // Función para calcular promedio de calificaciones
+        function calcularPromedioCalificaciones(publicidadId, tipo) {
+            const calificaciones = tipo === 'empresa' 
+                ? calificacionesEmpresasData[publicidadId] || []
+                : calificacionesData[publicidadId] || [];
+                
+            if (calificaciones.length === 0) return 0;
+            
+            const suma = calificaciones.reduce((total, cal) => total + cal.rating, 0);
+            return (suma / calificaciones.length).toFixed(1);
+        }
+
         // Renderizar categorías en el sidebar
         function renderCategorias() {
             const container = document.getElementById('categoriesList');
@@ -781,6 +937,7 @@
             empresas.forEach(publicidad => {
                 const categoriaNombre = getNombreCategoria(publicidad);
                 const nombreUsuario = getNombreUsuario(publicidad);
+                const promedio = calcularPromedioCalificaciones(publicidad.id_publicidad, 'empresa');
                 
                 empresasHTML += `
                     <div class="col-md-6 mb-3">
@@ -795,6 +952,14 @@
                                 </p>
                                 <div class="d-flex justify-content-between align-items-center mt-2">
                                     <span class="badge bg-success">${categoriaNombre}</span>
+                                    ${promedio > 0 ? `
+                                        <div class="average-rating">
+                                            <span class="text-warning">⭐ ${promedio}</span>
+                                            <small class="text-muted">(${calificacionesEmpresasData[publicidad.id_publicidad]?.length || 0})</small>
+                                        </div>
+                                    ` : '<small class="text-muted">⭐ Sin calificaciones</small>'}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
                                     <small class="text-muted">Publicado por: ${nombreUsuario}</small>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-2">
@@ -802,8 +967,11 @@
                                 </div>
                             </div>
                             <div class="card-footer bg-white border-0">
-                                <button class="btn btn-outline-secondary btn-sm" onclick="showDetails(${publicidad.id_publicidad})">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="showEmpresaDetails(${publicidad.id_publicidad})">
                                     Más Información
+                                </button>
+                                <button class="btn btn-rating btn-sm" onclick="showEmpresaRatingModal(${publicidad.id_publicidad})">
+                                    ⭐ Calificar
                                 </button>
                             </div>
                         </div>
@@ -835,6 +1003,7 @@
             talentos.forEach(publicidad => {
                 const categoriaNombre = getNombreCategoria(publicidad);
                 const nombreUsuario = getNombreUsuario(publicidad);
+                const promedio = calcularPromedioCalificaciones(publicidad.id_publicidad, 'talento');
                 
                 talentosHTML += `
                     <div class="col-md-4 mb-3">
@@ -846,14 +1015,23 @@
                                 </p>
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="badge bg-info text-dark">${categoriaNombre}</span>
-                                    <small class="text-muted">⭐ 4.5</small>
+                                    ${promedio > 0 ? `
+                                        <div class="average-rating">
+                                            <span class="text-warning">⭐ ${promedio}</span>
+                                            <small class="text-muted">(${calificacionesData[publicidad.id_publicidad]?.length || 0})</small>
+                                        </div>
+                                    ` : '<small class="text-muted">⭐ Sin calificaciones</small>'}
                                 </div>
                                 <div class="mb-2">
                                     <small class="text-muted"><strong>Publicado por:</strong> ${nombreUsuario}</small>
                                 </div>
-                                <button class="btn btn-outline-secondary btn-sm w-100" 
-                                        onclick="showTalentDetails(${publicidad.id_publicidad})">
+                            </div>
+                            <div class="card-footer bg-white border-0">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="showTalentoDetails(${publicidad.id_publicidad})">
                                     Más Información
+                                </button>
+                                <button class="btn btn-rating btn-sm" onclick="showRatingModal(${publicidad.id_publicidad})">
+                                    ⭐ Calificar
                                 </button>
                             </div>
                         </div>
@@ -894,6 +1072,7 @@
             empresas.forEach(publicidad => {
                 const categoriaNombre = getNombreCategoria(publicidad);
                 const nombreUsuario = getNombreUsuario(publicidad);
+                const promedio = calcularPromedioCalificaciones(publicidad.id_publicidad, 'empresa');
                 
                 empresasHTML += `
                     <div class="col-md-6 mb-3">
@@ -908,6 +1087,14 @@
                                 </p>
                                 <div class="d-flex justify-content-between align-items-center mt-2">
                                     <span class="badge bg-success">${categoriaNombre}</span>
+                                    ${promedio > 0 ? `
+                                        <div class="average-rating">
+                                            <span class="text-warning">⭐ ${promedio}</span>
+                                            <small class="text-muted">(${calificacionesEmpresasData[publicidad.id_publicidad]?.length || 0})</small>
+                                        </div>
+                                    ` : '<small class="text-muted">⭐ Sin calificaciones</small>'}
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
                                     <small class="text-muted">Publicado por: ${nombreUsuario}</small>
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-2">
@@ -915,8 +1102,11 @@
                                 </div>
                             </div>
                             <div class="card-footer bg-white border-0">
-                                <button class="btn btn-outline-secondary btn-sm" onclick="showDetails(${publicidad.id_publicidad})">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="showEmpresaDetails(${publicidad.id_publicidad})">
                                     Más Información
+                                </button>
+                                <button class="btn btn-rating btn-sm" onclick="showEmpresaRatingModal(${publicidad.id_publicidad})">
+                                    ⭐ Calificar
                                 </button>
                             </div>
                         </div>
@@ -945,6 +1135,7 @@
             talentos.forEach(publicidad => {
                 const categoriaNombre = getNombreCategoria(publicidad);
                 const nombreUsuario = getNombreUsuario(publicidad);
+                const promedio = calcularPromedioCalificaciones(publicidad.id_publicidad, 'talento');
                 
                 talentosHTML += `
                     <div class="col-md-4 mb-3">
@@ -956,14 +1147,23 @@
                                 </p>
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="badge bg-info text-dark">${categoriaNombre}</span>
-                                    <small class="text-muted">⭐ 4.5</small>
+                                    ${promedio > 0 ? `
+                                        <div class="average-rating">
+                                            <span class="text-warning">⭐ ${promedio}</span>
+                                            <small class="text-muted">(${calificacionesData[publicidad.id_publicidad]?.length || 0})</small>
+                                        </div>
+                                    ` : '<small class="text-muted">⭐ Sin calificaciones</small>'}
                                 </div>
                                 <div class="mb-2">
                                     <small class="text-muted"><strong>Publicado por:</strong> ${nombreUsuario}</small>
                                 </div>
-                                <button class="btn btn-outline-secondary btn-sm w-100" 
-                                        onclick="showTalentDetails(${publicidad.id_publicidad})">
+                            </div>
+                            <div class="card-footer bg-white border-0">
+                                <button class="btn btn-outline-secondary btn-sm" onclick="showTalentoDetails(${publicidad.id_publicidad})">
                                     Más Información
+                                </button>
+                                <button class="btn btn-rating btn-sm" onclick="showRatingModal(${publicidad.id_publicidad})">
+                                    ⭐ Calificar
                                 </button>
                             </div>
                         </div>
@@ -1107,16 +1307,424 @@
             return true;
         }
 
-        function showDetails(publicidadId) {
-            if (requireLogin()) {
-                alert(`🔧 Ver detalles de publicidad ID: ${publicidadId}`);
+        // Función para mostrar detalles de empresa/servicio
+        function showEmpresaDetails(publicidadId) {
+            if (!requireLogin()) return;
+            
+            const publicidad = publicidadesData.find(p => p.id_publicidad === publicidadId);
+            if (!publicidad) {
+                showError('No se encontró la información del servicio');
+                return;
             }
+            
+            const categoriaNombre = getNombreCategoria(publicidad);
+            const nombreUsuario = getNombreUsuario(publicidad);
+            const calificaciones = calificacionesEmpresasData[publicidadId] || [];
+            const promedio = calcularPromedioCalificaciones(publicidadId, 'empresa');
+            
+            // Generar contenido del modal
+            const modalContent = `
+                <div class="info-item">
+                    <div class="info-label">Nombre del servicio</div>
+                    <div class="info-value">${publicidad.titulo_publicidad}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Categoría</div>
+                    <div class="info-value">${categoriaNombre}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Tipo de Membresía</div>
+                    <div class="info-value">Básica</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Contacto</div>
+                    <div class="info-value">${publicidad.telefono_contacto || '+573001234567'}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Ubicación</div>
+                    <div class="info-value">${publicidad.ubicacion || 'Ciudad o zona donde opera'}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Años de experiencia</div>
+                    <div class="info-value">${publicidad.experiencia || 'Años de experiencia en el campo'}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Descripción</div>
+                    <div class="info-value">${publicidad.descripcion_detallada || 'Servicio profesional de calidad'}</div>
+                </div>
+                
+                ${promedio > 0 ? `
+                <div class="info-item">
+                    <div class="info-label">Calificación promedio</div>
+                    <div class="info-value">
+                        <div class="average-rating">
+                            <span class="text-warning" style="font-size: 1.2rem;">⭐ ${promedio}</span>
+                            <small class="text-muted">(${calificaciones.length} calificaciones)</small>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${calificaciones.length > 0 ? `
+                <div class="info-item">
+                    <div class="info-label">Calificaciones anteriores</div>
+                    <div id="calificacionesList">
+                        ${calificaciones.map(calificacion => `
+                            <div class="rating-item">
+                                <div class="rating-user">${calificacion.usuario}</div>
+                                <div class="rating-stars small">
+                                    ${'★'.repeat(calificacion.rating)}${'☆'.repeat(5 - calificacion.rating)}
+                                </div>
+                                <div class="rating-date">${calificacion.fecha}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            // Actualizar el modal
+            document.getElementById('empresaDetailsContent').innerHTML = modalContent;
+            document.getElementById('empresaDetailsModalLabel').textContent = publicidad.titulo_publicidad;
+            
+            // Mostrar el modal
+            empresaDetailsModal.show();
         }
 
-        function showTalentDetails(publicidadId) {
-            if (requireLogin()) {
-                alert(`🔧 Ver detalles de talento ID: ${publicidadId}`);
+        // Función para mostrar detalles de talento
+        function showTalentoDetails(publicidadId) {
+            if (!requireLogin()) return;
+            
+            const publicidad = publicidadesData.find(p => p.id_publicidad === publicidadId);
+            if (!publicidad) {
+                showError('No se encontró la información del talento');
+                return;
             }
+            
+            const categoriaNombre = getNombreCategoria(publicidad);
+            const nombreUsuario = getNombreUsuario(publicidad);
+            const calificaciones = calificacionesData[publicidadId] || [];
+            const promedio = calcularPromedioCalificaciones(publicidadId, 'talento');
+            
+            // Generar contenido del modal
+            const modalContent = `
+                <div class="info-item">
+                    <div class="info-label">Nombre del talento</div>
+                    <div class="info-value">${publicidad.titulo_publicidad}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Categoría</div>
+                    <div class="info-value">${categoriaNombre}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Tipo de Membresía</div>
+                    <div class="info-value">Básica</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Contacto</div>
+                    <div class="info-value">${publicidad.telefono_contacto || '+573001234567'}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Ubicación</div>
+                    <div class="info-value">${publicidad.ubicacion || 'Ciudad o zona donde trabajas'}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Años de experiencia</div>
+                    <div class="info-value">${publicidad.experiencia || 'Años de experiencia en el campo'}</div>
+                </div>
+                
+                <div class="info-item">
+                    <div class="info-label">Descripción</div>
+                    <div class="info-value">${publicidad.descripcion_detallada || 'ingeniero en software promedio'}</div>
+                </div>
+                
+                ${promedio > 0 ? `
+                <div class="info-item">
+                    <div class="info-label">Calificación promedio</div>
+                    <div class="info-value">
+                        <div class="average-rating">
+                            <span class="text-warning" style="font-size: 1.2rem;">⭐ ${promedio}</span>
+                            <small class="text-muted">(${calificaciones.length} calificaciones)</small>
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+                
+                ${calificaciones.length > 0 ? `
+                <div class="info-item">
+                    <div class="info-label">Calificaciones anteriores</div>
+                    <div id="calificacionesList">
+                        ${calificaciones.map(calificacion => `
+                            <div class="rating-item">
+                                <div class="rating-user">${calificacion.usuario}</div>
+                                <div class="rating-stars small">
+                                    ${'★'.repeat(calificacion.rating)}${'☆'.repeat(5 - calificacion.rating)}
+                                </div>
+                                <div class="rating-date">${calificacion.fecha}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            // Actualizar el modal
+            document.getElementById('talentoDetailsContent').innerHTML = modalContent;
+            document.getElementById('talentoDetailsModalLabel').textContent = publicidad.titulo_publicidad;
+            
+            // Mostrar el modal
+            talentoDetailsModal.show();
+        }
+
+        // Función para mostrar modal de calificación de empresa
+        function showEmpresaRatingModal(publicidadId) {
+            if (!requireLogin()) return;
+            
+            const publicidad = publicidadesData.find(p => p.id_publicidad === publicidadId);
+            if (!publicidad) {
+                showError('No se encontró la información de la empresa');
+                return;
+            }
+            
+            currentPublicidadId = publicidadId;
+            currentRating = 0;
+            currentRatingType = 'empresa';
+            
+            // Generar contenido del modal
+            const modalContent = `
+                <div class="text-center">
+                    <h6>Calificar a: ${publicidad.titulo_publicidad}</h6>
+                    <p class="text-muted">Selecciona de 1 a 5 estrellas</p>
+                    
+                    <div class="rating-stars mb-3" id="ratingStars">
+                        <span class="star" data-rating="1">☆</span>
+                        <span class="star" data-rating="2">☆</span>
+                        <span class="star" data-rating="3">☆</span>
+                        <span class="star" data-rating="4">☆</span>
+                        <span class="star" data-rating="5">☆</span>
+                    </div>
+                    
+                    <div id="ratingValue" class="text-muted">Selecciona una calificación</div>
+                </div>
+            `;
+            
+            // Actualizar el modal
+            document.getElementById('ratingEmpresaContent').innerHTML = modalContent;
+            document.getElementById('ratingEmpresaModalLabel').textContent = `Calificar: ${publicidad.titulo_publicidad}`;
+            
+            // Configurar el sistema de calificación
+            setupRatingSystem();
+            
+            // Configurar el botón de confirmación
+            document.getElementById('confirmEmpresaRatingBtn').onclick = function() {
+                if (currentRating === 0) {
+                    showError('Por favor selecciona una calificación');
+                    return;
+                }
+                guardarCalificacion();
+            };
+            
+            // Mostrar el modal
+            ratingEmpresaModal.show();
+        }
+
+        // Función para mostrar modal de calificación de talento
+        function showRatingModal(publicidadId) {
+            if (!requireLogin()) return;
+            
+            const publicidad = publicidadesData.find(p => p.id_publicidad === publicidadId);
+            if (!publicidad) {
+                showError('No se encontró la información del talento');
+                return;
+            }
+            
+            currentPublicidadId = publicidadId;
+            currentRating = 0;
+            currentRatingType = 'talento';
+            
+            // Generar contenido del modal
+            const modalContent = `
+                <div class="text-center">
+                    <h6>Calificar a: ${publicidad.titulo_publicidad}</h6>
+                    <p class="text-muted">Selecciona de 1 a 5 estrellas</p>
+                    
+                    <div class="rating-stars mb-3" id="ratingStars">
+                        <span class="star" data-rating="1">☆</span>
+                        <span class="star" data-rating="2">☆</span>
+                        <span class="star" data-rating="3">☆</span>
+                        <span class="star" data-rating="4">☆</span>
+                        <span class="star" data-rating="5">☆</span>
+                    </div>
+                    
+                    <div id="ratingValue" class="text-muted">Selecciona una calificación</div>
+                </div>
+            `;
+            
+            // Actualizar el modal
+            document.getElementById('ratingContent').innerHTML = modalContent;
+            document.getElementById('ratingModalLabel').textContent = `Calificar: ${publicidad.titulo_publicidad}`;
+            
+            // Configurar el sistema de calificación
+            setupRatingSystem();
+            
+            // Configurar el botón de confirmación
+            document.getElementById('confirmRatingBtn').onclick = function() {
+                if (currentRating === 0) {
+                    showError('Por favor selecciona una calificación');
+                    return;
+                }
+                guardarCalificacion();
+            };
+            
+            // Mostrar el modal
+            ratingModal.show();
+        }
+
+        // Configurar el sistema de calificación con estrellas
+        function setupRatingSystem() {
+            const stars = document.querySelectorAll('.star');
+            const ratingValue = document.getElementById('ratingValue');
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    currentRating = rating;
+                    
+                    // Actualizar estrellas
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.textContent = '★';
+                            s.style.color = '#ffc107';
+                        } else {
+                            s.textContent = '☆';
+                            s.style.color = '#ffc107';
+                        }
+                    });
+                    
+                    // Actualizar texto
+                    ratingValue.textContent = `Has seleccionado ${rating} estrella${rating > 1 ? 's' : ''}`;
+                    ratingValue.style.color = '#495057';
+                });
+                
+                // Efecto hover
+                star.addEventListener('mouseover', function() {
+                    const hoverRating = parseInt(this.getAttribute('data-rating'));
+                    
+                    stars.forEach((s, index) => {
+                        if (index < hoverRating) {
+                            s.style.color = '#ffc107';
+                        } else {
+                            s.style.color = '#e0e0e0';
+                        }
+                    });
+                });
+                
+                star.addEventListener('mouseout', function() {
+                    stars.forEach((s, index) => {
+                        if (index < currentRating) {
+                            s.style.color = '#ffc107';
+                        } else {
+                            s.style.color = '#ffc107';
+                        }
+                    });
+                });
+            });
+        }
+
+        // Función para guardar calificación
+        function guardarCalificacion() {
+            // Obtener información del usuario actual
+            const userData = localStorage.getItem('user_data');
+            let userName = 'Usuario Anónimo';
+            
+            if (userData) {
+                try {
+                    const user = JSON.parse(userData);
+                    userName = user.nombre_completo || user.correo_electronico || 'Usuario';
+                } catch (e) {
+                    console.error('Error parsing user data:', e);
+                }
+            }
+            
+            // Crear objeto de calificación
+            const nuevaCalificacion = {
+                rating: currentRating,
+                usuario: userName,
+                fecha: new Date().toLocaleDateString('es-ES')
+            };
+            
+            // Determinar qué conjunto de datos usar
+            const calificacionesTarget = currentRatingType === 'empresa' 
+                ? calificacionesEmpresasData 
+                : calificacionesData;
+            
+            // Inicializar array si no existe
+            if (!calificacionesTarget[currentPublicidadId]) {
+                calificacionesTarget[currentPublicidadId] = [];
+            }
+            
+            // Verificar si el usuario ya calificó
+            const calificacionExistenteIndex = calificacionesTarget[currentPublicidadId].findIndex(
+                cal => cal.usuario === userName
+            );
+            
+            if (calificacionExistenteIndex !== -1) {
+                // Actualizar calificación existente
+                calificacionesTarget[currentPublicidadId][calificacionExistenteIndex] = nuevaCalificacion;
+            } else {
+                // Agregar nueva calificación
+                calificacionesTarget[currentPublicidadId].push(nuevaCalificacion);
+            }
+            
+            // Guardar en localStorage (en producción sería en la base de datos)
+            localStorage.setItem('workly_calificaciones', JSON.stringify(calificacionesData));
+            localStorage.setItem('workly_calificaciones_empresas', JSON.stringify(calificacionesEmpresasData));
+            
+            console.log(`✅ Calificación guardada: ${currentRating} estrellas por ${userName} para ${currentRatingType} ${currentPublicidadId}`);
+            
+            // Cerrar modal y mostrar mensaje de éxito
+            if (currentRatingType === 'empresa') {
+                ratingEmpresaModal.hide();
+            } else {
+                ratingModal.hide();
+            }
+            
+            showSuccess('¡Calificación guardada exitosamente!');
+            
+            // Actualizar la vista
+            renderHomeContent();
+        }
+
+        function showSuccess(message) {
+            // Crear alerta temporal
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+            alertDiv.style.top = '20px';
+            alertDiv.style.right = '20px';
+            alertDiv.style.zIndex = '9999';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            
+            // Remover después de 3 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 3000);
         }
 
         function showCategoryPage(categoriaId) {

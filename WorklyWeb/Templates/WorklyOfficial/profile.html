@@ -390,11 +390,6 @@
                             <div class="mb-3">
                                 <label class="form-label">Tipo de Membresía</label>
                                 <select class="form-control" id="editPubMembership">
-                                    <option value="basica">Básica</option>
-                                    <option value="premium">Premium</option>
-                                    <option value="empresa">Empresa</option>
-                                    <option value="gratuita">Gratuita</option>
-                                    <option value="estandar">Estándar</option>
                                     <option value="1">1 - Básica</option>
                                     <option value="2">2 - Premium</option>
                                     <option value="3">3 - Empresa</option>
@@ -621,7 +616,7 @@
                             <div class="text-muted small">
                                 <strong>Ubicación:</strong> ${publication.ubicacion || 'No especificada'} |
                                 <strong>Categoría:</strong> ${getCategoryName(publication.id_categoria)} |
-                                <strong>Membresía:</strong> ${publication.tipo_membresia_vinculada || 'No especificada'} |
+                                <strong>Membresía:</strong> ${getMembershipName(publication.tipo_membresia_vinculada)} |
                                 ${publication.precio ? `<strong>Precio:</strong> $${publication.precio}` : ''}
                             </div>
                             <div class="publication-actions">
@@ -660,7 +655,12 @@
             document.getElementById('editPubStatus').value = publication.estado_publicacion || 'activa';
             document.getElementById('editPubLocation').value = publication.ubicacion || '';
             document.getElementById('editPubCategory').value = publication.id_categoria || '';
-            document.getElementById('editPubMembership').value = publication.tipo_membresia_vinculada || 'basica';
+            
+            // CORREGIDO: Convertir el valor de membresía a número
+            const membershipValue = publication.tipo_membresia_vinculada;
+            document.getElementById('editPubMembership').value = typeof membershipValue === 'string' ? 
+                convertMembershipStringToNumber(membershipValue) : membershipValue;
+            
             document.getElementById('editPubPrice').value = publication.precio || '';
             document.getElementById('editPubContact').value = publication.contacto || '';
             document.getElementById('editPubExperience').value = publication.experiencia || '';
@@ -668,7 +668,22 @@
             editPublicationModal.show();
         }
 
-        // Guardar cambios de publicación - VERSIÓN CORREGIDA CON MEMBRESÍA
+        // Función para convertir string de membresía a número
+        function convertMembershipStringToNumber(membershipString) {
+            const membershipMap = {
+                'basica': '1',
+                'premium': '2',
+                'empresa': '3',
+                'gratuita': '1',
+                'estandar': '1',
+                'Básica': '1',
+                'Premium': '2',
+                'Empresa': '3'
+            };
+            return membershipMap[membershipString] || '1';
+        }
+
+        // Guardar cambios de publicación - VERSIÓN CORREGIDA
         async function savePublicationChanges() {
             if (!publicationToEdit) return;
 
@@ -713,14 +728,14 @@
             try {
                 const publicationId = publicationToEdit.id_publicidad || publicationToEdit.id;
                 
-                // Crear el objeto de datos EXACTO como lo espera el backend
+                // CORREGIDO: Asegurar que tipo_membresia_vinculada sea un número
                 const updatedPublication = {
                     titulo_publicidad: titulo_publicidad,
                     descripcion_detallada: descripcion_detallada,
                     estado_publicacion: estado_publicacion,
                     ubicacion: ubicacion,
                     id_categoria: parseInt(id_categoria),
-                    tipo_membresia_vinculada: tipo_membresia_vinculada,
+                    tipo_membresia_vinculada: parseInt(tipo_membresia_vinculada), // CONVERTIR A NÚMERO
                     contacto: contacto,
                     experiencia: experiencia ? parseInt(experiencia) : 0
                 };
@@ -777,8 +792,10 @@
                         errorMessage = errorData.message;
                     } else if (typeof errorData === 'object') {
                         // Mostrar todos los errores de validación
-                        const validationErrors = Object.values(errorData).flat().join(', ');
-                        errorMessage = `Errores de validación: ${validationErrors}`;
+                        const validationErrors = Object.entries(errorData)
+                            .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+                            .join('\n');
+                        errorMessage = `Errores de validación:\n${validationErrors}`;
                     }
                     
                     throw new Error(errorMessage);
@@ -809,6 +826,20 @@
             };
             
             return categoryMap[categoryValue] || 'Categoría desconocida';
+        }
+
+        // Obtener nombre legible de la membresía
+        function getMembershipName(membershipValue) {
+            const membershipMap = {
+                '1': 'Básica',
+                '2': 'Premium',
+                '3': 'Empresa',
+                'basica': 'Básica',
+                'premium': 'Premium',
+                'empresa': 'Empresa'
+            };
+            
+            return membershipMap[membershipValue] || membershipValue || 'No especificada';
         }
 
         // Mostrar mensaje cuando no hay publicaciones
@@ -905,59 +936,44 @@
         document.getElementById('confirmDeleteBtn').addEventListener('click', deletePublication);
         document.getElementById('savePublicationBtn').addEventListener('click', savePublicationChanges);
 
-        // Mostrar datos del perfil del usuario
+        // Mostrar datos del perfil del usuario - MEJORADA
         function displayUserProfile(user) {
-            // Nombre completo
-            if (user && user.nombre_completo) {
-                document.getElementById('userFullName').textContent = user.nombre_completo;
-                document.getElementById('profileName').textContent = user.nombre_completo;
-                document.getElementById('editFullName').value = user.nombre_completo;
-            } else {
-                document.getElementById('userFullName').innerHTML = '<span class="empty-field">No especificado</span>';
-                document.getElementById('editFullName').value = '';
+            if (!user) {
+                console.error('No hay datos de usuario');
+                return;
             }
+
+            // Nombre completo
+            const fullName = user.nombre_completo || user.nombre || '';
+            document.getElementById('userFullName').textContent = fullName || 'No especificado';
+            document.getElementById('profileName').textContent = fullName || 'Mi Perfil';
+            document.getElementById('editFullName').value = fullName;
 
             // Correo electrónico
-            if (user && user.correo_electronico) {
-                document.getElementById('userEmail').textContent = user.correo_electronico;
-                document.getElementById('editEmail').value = user.correo_electronico;
-            } else {
-                document.getElementById('userEmail').innerHTML = '<span class="empty-field">No especificado</span>';
-                document.getElementById('editEmail').value = '';
-            }
+            const email = user.correo_electronico || user.email || user.correo || '';
+            document.getElementById('userEmail').textContent = email || 'No especificado';
+            document.getElementById('editEmail').value = email;
 
             // Teléfono de contacto
-            if (user && user.telefono_contacto) {
-                document.getElementById('userPhone').textContent = user.telefono_contacto;
-                document.getElementById('editPhone').value = user.telefono_contacto;
-            } else {
-                document.getElementById('userPhone').innerHTML = '<span class="empty-field">No especificado</span>';
-                document.getElementById('editPhone').value = '';
-            }
+            const phone = user.telefono_contacto || user.telefono || user.phone || '';
+            document.getElementById('userPhone').textContent = phone || 'No especificado';
+            document.getElementById('editPhone').value = phone;
 
             // Tipo de usuario
-            if (user && user.tipo_usuario) {
-                let userTypeText = user.tipo_usuario;
-                if (user.tipo_usuario === 'talento_humano') {
-                    userTypeText = 'Talento Humano';
-                } else if (user.tipo_usuario === 'empresa') {
-                    userTypeText = 'Empresa';
-                }
-                document.getElementById('userType').textContent = userTypeText;
-                document.getElementById('editUserType').value = user.tipo_usuario;
-            } else {
-                document.getElementById('userType').innerHTML = '<span class="empty-field">No especificado</span>';
-                document.getElementById('editUserType').value = '';
+            const userType = user.tipo_usuario || user.tipo || '';
+            let userTypeText = userType;
+            if (userType === 'talento_humano') {
+                userTypeText = 'Talento Humano';
+            } else if (userType === 'empresa') {
+                userTypeText = 'Empresa';
             }
+            document.getElementById('userType').textContent = userTypeText || 'No especificado';
+            document.getElementById('editUserType').value = userType;
 
             // Descripción del perfil
-            if (user && user.descripcion_perfil) {
-                document.getElementById('userDescription').textContent = user.descripcion_perfil;
-                document.getElementById('editDescription').value = user.descripcion_perfil;
-            } else {
-                document.getElementById('userDescription').innerHTML = '<span class="empty-field">No hay descripción disponible</span>';
-                document.getElementById('editDescription').value = '';
-            }
+            const description = user.descripcion_perfil || user.descripcion || user.bio || '';
+            document.getElementById('userDescription').textContent = description || 'No hay descripción disponible';
+            document.getElementById('editDescription').value = description;
         }
 
         // Alternar modo de edición
@@ -991,11 +1007,20 @@
             }
         }
 
-        // Guardar perfil
+        // Guardar perfil - VERSIÓN CORREGIDA
         async function saveProfile() {
             const token = localStorage.getItem('access_token');
             if (!token) {
                 alert('Error: No estás autenticado');
+                return;
+            }
+
+            // Obtener el usuario actual para saber su ID
+            const userData = JSON.parse(localStorage.getItem('user_data'));
+            const userId = userData?.id_usuario || userData?.id;
+
+            if (!userId) {
+                alert('Error: No se pudo identificar el usuario');
                 return;
             }
 
@@ -1007,29 +1032,27 @@
                 descripcion_perfil: document.getElementById('editDescription').value.trim()
             };
 
+            // Validaciones básicas
+            if (!updatedData.nombre_completo) {
+                alert('❌ El nombre completo es obligatorio');
+                return;
+            }
+
+            if (!updatedData.correo_electronico) {
+                alert('❌ El correo electrónico es obligatorio');
+                return;
+            }
+
+            console.log('📤 Enviando datos de actualización:', updatedData);
+
             try {
-                let response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updatedData)
-                });
+                // Intentar diferentes endpoints en orden
+                let response;
+                let success = false;
 
-                if (!response.ok) {
-                    response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
-                        method: 'PATCH',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(updatedData)
-                    });
-                }
-
-                if (!response.ok) {
-                    response = await fetch(`${BACKEND_URL}/usuarios/me/`, {
+                // PRIMER INTENTO: Endpoint específico del usuario por ID
+                try {
+                    response = await fetch(`${BACKEND_URL}/usuarios/${userId}/`, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `Bearer ${token}`,
@@ -1037,42 +1060,129 @@
                         },
                         body: JSON.stringify(updatedData)
                     });
+                    
+                    if (response.ok) {
+                        success = true;
+                    }
+                } catch (error) {
+                    console.log('Primer endpoint falló, intentando siguiente...');
                 }
 
-                if (response.ok) {
+                // SEGUNDO INTENTO: Endpoint PATCH
+                if (!success) {
+                    try {
+                        response = await fetch(`${BACKEND_URL}/usuarios/${userId}/`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(updatedData)
+                        });
+                        
+                        if (response.ok) {
+                            success = true;
+                        }
+                    } catch (error) {
+                        console.log('Segundo endpoint falló, intentando siguiente...');
+                    }
+                }
+
+                // TERCER INTENTO: Endpoint de perfil de usuario
+                if (!success) {
+                    try {
+                        response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(updatedData)
+                        });
+                        
+                        if (response.ok) {
+                            success = true;
+                        }
+                    } catch (error) {
+                        console.log('Tercer endpoint falló, intentando siguiente...');
+                    }
+                }
+
+                // CUARTO INTENTO: Endpoint alternativo de perfil
+                if (!success) {
+                    try {
+                        response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(updatedData)
+                        });
+                        
+                        if (response.ok) {
+                            success = true;
+                        }
+                    } catch (error) {
+                        console.log('Cuarto endpoint falló...');
+                    }
+                }
+
+                if (success) {
                     const responseData = await response.json();
-                    const userData = responseData.data || responseData;
+                    const updatedUserData = responseData.data || responseData;
                     
-                    localStorage.setItem('user_data', JSON.stringify(userData));
-                    originalUserData = {...userData};
+                    // Actualizar datos en localStorage
+                    localStorage.setItem('user_data', JSON.stringify(updatedUserData));
+                    originalUserData = {...updatedUserData};
                     
-                    document.getElementById('successMessage').textContent = 'Tu perfil se ha actualizado correctamente.';
+                    // Mostrar mensaje de éxito
+                    document.getElementById('successMessage').textContent = '✅ Tu perfil se ha actualizado correctamente.';
                     successModal.show();
                     
+                    // Actualizar la UI
                     cancelEdit();
-                    displayUserProfile(userData);
+                    displayUserProfile(updatedUserData);
                     showAuthenticatedUI();
                     
+                    // Recargar publicaciones para asegurar consistencia
+                    await loadUserPublications();
+                    
                 } else {
-                    const errorData = await response.json();
+                    // Si todos los endpoints fallaron, mostrar error detallado
                     let errorMessage = 'Error al guardar los cambios';
                     
-                    if (errorData.detail) {
-                        errorMessage = errorData.detail;
-                    } else if (errorData.error) {
-                        errorMessage = errorData.error;
-                    } else if (errorData.message) {
-                        errorMessage = errorData.message;
+                    if (response) {
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error('❌ Error del servidor:', errorData);
+                        
+                        if (errorData.detail) {
+                            errorMessage = errorData.detail;
+                        } else if (errorData.error) {
+                            errorMessage = errorData.error;
+                        } else if (errorData.message) {
+                            errorMessage = errorData.message;
+                        } else if (typeof errorData === 'object') {
+                            // Mostrar errores de validación específicos
+                            const validationErrors = Object.entries(errorData)
+                                .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
+                                .join('\n');
+                            errorMessage = `Errores de validación:\n${validationErrors}`;
+                        }
                     }
                     
                     throw new Error(errorMessage);
                 }
                 
             } catch (error) {
+                console.error('💥 Error completo al guardar perfil:', error);
+                
                 if (error.message.includes('tipo_usuario') || error.message.includes('tipo de usuario')) {
                     alert('❌ No se puede cambiar el tipo de usuario. Esta opción puede estar restringida.');
+                } else if (error.message.includes('correo') || error.message.includes('email')) {
+                    alert('❌ Error con el correo electrónico: ' + error.message);
                 } else if (error.message.includes('Failed to fetch')) {
-                    alert('❌ Error de conexión: No se pudo conectar con el servidor.');
+                    alert('❌ Error de conexión: No se pudo conectar con el servidor. Verifica tu conexión a internet.');
                 } else {
                     alert('❌ Error al guardar los cambios:\n' + error.message);
                 }

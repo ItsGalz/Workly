@@ -512,44 +512,150 @@
         // Cargar datos iniciales
         async function loadInitialData() {
             try {
+                // Primero cargar categorías
+                await loadCategorias();
+                
+                // Luego cargar publicidades y usuarios en paralelo
                 await Promise.all([
-                    loadCategorias(),
                     loadPublicidades(),
                     loadUsuarios()
                 ]);
+                
                 renderHomeContent();
+                
+                // DEBUG: Mostrar información de categorías y publicidades
+                setTimeout(debugCategoriaPublicidad, 1000);
+                
             } catch (error) {
                 console.error('Error cargando datos iniciales:', error);
                 showError('Error al cargar los datos');
             }
         }
 
-        // Función para determinar si es Empresa o Talento
+        // Función para determinar si es Empresa o Talento - CORREGIDA
         function esEmpresa(publicidad) {
-            // Basado en el título, descripción o campos específicos
+            console.log('Analizando publicidad:', publicidad);
+            
+            // MÉTODO 1: Verificar si hay un campo específico de tipo
+            if (publicidad.tipo_publicidad !== undefined) {
+                const tipo = publicidad.tipo_publicidad.toLowerCase();
+                console.log('Tipo de publicidad encontrado:', tipo);
+                return tipo.includes('empresa') || tipo.includes('servicio') || tipo.includes('company');
+            }
+            
+            // MÉTODO 2: Verificar si hay un campo de tipo_usuario
+            if (publicidad.tipo_usuario !== undefined) {
+                const tipo = publicidad.tipo_usuario.toLowerCase();
+                console.log('Tipo de usuario encontrado:', tipo);
+                return tipo.includes('empresa') || tipo.includes('company');
+            }
+            
+            // MÉTODO 3: Analizar el título y descripción
             const titulo = publicidad.titulo_publicidad ? publicidad.titulo_publicidad.toLowerCase() : '';
             const descripcion = publicidad.descripcion_detallada ? publicidad.descripcion_detallada.toLowerCase() : '';
             
-            // Si el título contiene "empresa", "servicio", "compañía", etc.
-            const palabrasEmpresa = ['empresa', 'servicio', 'compañía', 'company', 'business', 'corporación'];
-            const palabrasTalento = ['talento', 'freelance', 'independiente', 'personal', 'profesional'];
+            console.log('Título:', titulo);
+            console.log('Descripción:', descripcion);
+            
+            // Palabras clave para empresa (con más variaciones)
+            const palabrasEmpresa = [
+                'empresa', 'servicio', 'compañía', 'company', 'business', 
+                'corporación', 'corporacion', 's.a.', 's.a', 'limitada', 
+                'corporativo', 'corporate', 'enterprise', 'emprendimiento',
+                'sociedad', 'firma', 'organización', 'organizacion',
+                'consultoría', 'consultoria', 'estudio', 'agencia',
+                'servicios', 'workshop', 'atelier', 'negocio',
+                'solutions', 'group', 'tech', 'digital', 'marketing',
+                'construcción', 'construccion', 'electricidad',
+                'plomería', 'plomeria', 'carpintería', 'carpinteria',
+                'refrigeración', 'refrigeracion', 'mecánica', 'mecanica',
+                'turismo', 'limpieza', 'repostería', 'reposteria',
+                'educación', 'educacion', 'cuidado', 'belleza',
+                'programación', 'programacion', 'diseño', 'diseño'
+            ];
+            
+            // Palabras clave para talento
+            const palabrasTalento = [
+                'talento', 'freelance', 'independiente', 'personal', 'profesional',
+                'individual', 'consultor', 'asesor', 'freelancer', 'autónomo',
+                'autonomo', 'persona', 'individual', 'experto', 'especialista',
+                'developer', 'desarrollador', 'diseñador', 'diseñadora',
+                'programador', 'programadora', 'ingeniero', 'ingeniera',
+                'arquitecto', 'arquitecta', 'abogado', 'abogada',
+                'contador', 'contadora', 'psicólogo', 'psicologa',
+                'maestro', 'maestra', 'profesor', 'profesora',
+                'coach', 'mentor', 'tutor', 'instructor'
+            ];
+            
+            // Contar coincidencias
+            let contadorEmpresa = 0;
+            let contadorTalento = 0;
             
             // Verificar palabras de empresa
-            for (let palabra of palabrasEmpresa) {
+            palabrasEmpresa.forEach(palabra => {
                 if (titulo.includes(palabra) || descripcion.includes(palabra)) {
-                    return true;
+                    contadorEmpresa++;
                 }
-            }
+            });
             
             // Verificar palabras de talento
-            for (let palabra of palabrasTalento) {
+            palabrasTalento.forEach(palabra => {
                 if (titulo.includes(palabra) || descripcion.includes(palabra)) {
-                    return false;
+                    contadorTalento++;
+                }
+            });
+            
+            console.log('Coincidencias empresa:', contadorEmpresa);
+            console.log('Coincidencias talento:', contadorTalento);
+            
+            // Decisión basada en coincidencias
+            if (contadorEmpresa > contadorTalento) {
+                console.log('✅ Determinado como EMPRESA');
+                return true;
+            } else if (contadorTalento > contadorEmpresa) {
+                console.log('✅ Determinado como TALENTO');
+                return false;
+            }
+            
+            // MÉTODO 4: Si hay igualdad, usar formato del título
+            if (titulo.includes('talento:')) {
+                console.log('✅ Determinado como TALENTO (por formato de título)');
+                return false;
+            }
+            
+            if (titulo.includes('empresa:') || titulo.includes('servicio:')) {
+                console.log('✅ Determinado como EMPRESA (por formato de título)');
+                return true;
+            }
+            
+            // MÉTODO 5: Si el ID de usuario está en los usuarios cargados, verificar su tipo
+            let usuarioId = null;
+            if (publicidad.id_usuario_id !== undefined && publicidad.id_usuario_id !== null) {
+                usuarioId = publicidad.id_usuario_id;
+            } else if (publicidad.id_usuario !== undefined && publicidad.id_usuario !== null) {
+                usuarioId = publicidad.id_usuario;
+            } else if (publicidad.usuario_id !== undefined && publicidad.usuario_id !== null) {
+                usuarioId = publicidad.usuario_id;
+            }
+            
+            if (usuarioId && usuariosData[usuarioId]) {
+                const usuario = usuariosData[usuarioId];
+                if (usuario.tipo_usuario) {
+                    const tipo = usuario.tipo_usuario.toLowerCase();
+                    console.log('Tipo de usuario en datos:', tipo);
+                    return tipo.includes('empresa');
                 }
             }
             
-            // Si no se puede determinar, usar el ID como criterio alternativo
-            return publicidad.id_publicidad <= 3;
+            // MÉTODO 6: Por defecto, si tiene "servicio" o "empresa" en cualquier parte
+            if (contadorEmpresa > 0) {
+                console.log('✅ Determinado como EMPRESA (por palabras clave)');
+                return true;
+            }
+            
+            // Por defecto, considerar como talento
+            console.log('⚠️ No se pudo determinar claramente, por defecto: TALENTO');
+            return false;
         }
 
         // Separar publicidades en Empresas y Talentos
@@ -565,18 +671,39 @@
                 }
             });
             
-            console.log(`📊 Separación: ${empresas.length} empresas, ${talentos.length} talentos`);
+            console.log(`📊 Separación final: ${empresas.length} empresas, ${talentos.length} talentos`);
+            
+            // Log para depuración
+            if (empresas.length > 0) {
+                console.log('📋 Empresas encontradas:');
+                empresas.forEach(emp => {
+                    console.log(`  - ${emp.titulo_publicidad} (ID: ${emp.id_publicidad})`);
+                });
+            }
+            
+            if (talentos.length > 0) {
+                console.log('👥 Talentos encontrados:');
+                talentos.forEach(tal => {
+                    console.log(`  - ${tal.titulo_publicidad} (ID: ${tal.id_publicidad})`);
+                });
+            }
+            
             return { empresas, talentos };
         }
 
-        // Cargar categorías desde la API
+        // Cargar categorías desde la API - VERSIÓN MEJORADA
         async function loadCategorias() {
             try {
+                console.log('🔄 Cargando categorías...');
                 const response = await fetch(`${BACKEND_URL}/api/categorias/`);
-                if (!response.ok) throw new Error('Error al cargar categorías');
+                
+                if (!response.ok) {
+                    console.error('❌ Error al cargar categorías:', response.status, response.statusText);
+                    throw new Error(`Error al cargar categorías: ${response.status}`);
+                }
                 
                 const data = await response.json();
-                console.log('📋 Datos de categorías recibidos:', data);
+                console.log('📋 Respuesta cruda de categorías:', data);
                 
                 // Manejar diferentes formatos de respuesta
                 if (Array.isArray(data)) {
@@ -586,20 +713,52 @@
                 } else if (data.data && Array.isArray(data.data)) {
                     categoriasData = data.data;
                 } else {
-                    throw new Error('Formato de respuesta no reconocido');
+                    console.warn('⚠️ Formato de categorías no reconocido, intentando extraer array');
+                    // Intentar encontrar un array en el objeto
+                    for (const key in data) {
+                        if (Array.isArray(data[key])) {
+                            categoriasData = data[key];
+                            break;
+                        }
+                    }
                 }
                 
-                console.log('📋 Categorías procesadas:', categoriasData);
+                console.log(`✅ Categorías cargadas: ${categoriasData.length} categorías`);
+                console.log('📋 Lista de categorías:', categoriasData.map(c => ({
+                    id: c.id_categoria || c.id,
+                    nombre: c.nombre_categoria
+                })));
+                
+                // Renderizar categorías en el sidebar
                 renderCategorias();
+                
             } catch (error) {
-                console.error('Error cargando categorías:', error);
-                throw error;
+                console.error('💥 Error cargando categorías:', error);
+                // Crear categorías de emergencia si hay error
+                categoriasData = [
+                    { id_categoria: 1, nombre_categoria: 'Electricidad' },
+                    { id_categoria: 2, nombre_categoria: 'Construcción' },
+                    { id_categoria: 3, nombre_categoria: 'Plomería' },
+                    { id_categoria: 4, nombre_categoria: 'Carpintería' },
+                    { id_categoria: 5, nombre_categoria: 'Refrigeración / Aire Acondicionado' },
+                    { id_categoria: 6, nombre_categoria: 'Mecánica automotriz' },
+                    { id_categoria: 7, nombre_categoria: 'Turismo / Guías / Hotelería' },
+                    { id_categoria: 8, nombre_categoria: 'Limpieza' },
+                    { id_categoria: 9, nombre_categoria: 'Repostería' },
+                    { id_categoria: 10, nombre_categoria: 'Tutorías / Educación' },
+                    { id_categoria: 11, nombre_categoria: 'Cuidado infantil / Adultos mayores' },
+                    { id_categoria: 12, nombre_categoria: 'Belleza' },
+                    { id_categoria: 13, nombre_categoria: 'Otros' }
+                ];
+                console.log('⚠️ Usando categorías de emergencia');
+                renderCategorias();
             }
         }
 
         // Cargar publicidades desde la API
         async function loadPublicidades() {
             try {
+                console.log('🔄 Cargando publicidades...');
                 const response = await fetch(`${BACKEND_URL}/api/publicidades/`);
                 if (!response.ok) throw new Error('Error al cargar publicidades');
                 
@@ -617,10 +776,23 @@
                     throw new Error('Formato de respuesta no reconocido');
                 }
                 
-                console.log('📢 Publicidades procesadas:', publicidadesData);
+                console.log(`✅ Publicidades cargadas: ${publicidadesData.length} publicidades`);
+                
+                // DEPURACIÓN: Verificar estructura de las primeras 3 publicidades
+                console.log('🔍 DEPURACIÓN - Estructura de publicidades:');
+                publicidadesData.slice(0, 3).forEach((pub, index) => {
+                    console.log(`📋 Publicidad ${index + 1}:`, {
+                        id: pub.id_publicidad || pub.id,
+                        titulo: pub.titulo_publicidad,
+                        id_categoria_id: pub.id_categoria_id,
+                        id_categoria: pub.id_categoria,
+                        categoria_id: pub.categoria_id,
+                        categoria: pub.categoria
+                    });
+                });
                 
             } catch (error) {
-                console.error('Error cargando publicidades:', error);
+                console.error('💥 Error cargando publicidades:', error);
                 throw error;
             }
         }
@@ -628,8 +800,13 @@
         // Cargar usuarios desde la API - VERSIÓN MEJORADA
         async function loadUsuarios() {
             try {
+                console.log('🔄 Cargando usuarios...');
                 const response = await fetch(`${BACKEND_URL}/api/usuarios/`);
-                if (!response.ok) throw new Error('Error al cargar usuarios');
+                if (!response.ok) {
+                    console.log('⚠️ No se pudieron cargar usuarios, continuando sin ellos');
+                    usuariosData = {};
+                    return;
+                }
                 
                 const data = await response.json();
                 console.log('👥 Datos de usuarios recibidos:', data);
@@ -662,7 +839,7 @@
                     }
                 });
                 
-                console.log('👥 Usuarios procesados:', Object.keys(usuariosData).length, 'usuarios cargados');
+                console.log(`✅ Usuarios cargados: ${Object.keys(usuariosData).length} usuarios`);
                 
             } catch (error) {
                 console.error('Error cargando usuarios:', error);
@@ -671,48 +848,66 @@
             }
         }
 
-        // Función para obtener nombre de categoría por ID - SOLUCIÓN TEMPORAL
+        // FUNCIÓN CORREGIDA: Función para obtener nombre de categoría por ID
         function getNombreCategoria(publicidad) {
-            // SOLUCIÓN TEMPORAL: Extraer la categoría del título
-            // Los títulos tienen formato: "Talento: Nombre - Categoría"
-            const titulo = publicidad.titulo_publicidad;
+            console.log('🔍 Buscando categoría para publicidad:');
+            console.log('📋 ID Publicidad:', publicidad.id_publicidad || publicidad.id);
+            console.log('📋 Título:', publicidad.titulo_publicidad);
             
-            if (titulo && titulo.includes(' - ')) {
-                const partes = titulo.split(' - ');
-                if (partes.length > 1) {
-                    const categoriaDelTitulo = partes[partes.length - 1];
-                    return categoriaDelTitulo;
-                }
-            }
-            
-            // Si no se puede extraer del título, buscar en campos de categoría
+            // BUSCAR EL ID DE CATEGORÍA EN EL CAMPO CORRECTO (id_categoria)
             let categoriaId = null;
             
-            // Buscar en campos de categoría
+            // PRIMERO: Buscar en id_categoria (el campo usado en publicarme.html)
             if (publicidad.id_categoria !== undefined && publicidad.id_categoria !== null) {
                 categoriaId = publicidad.id_categoria;
-            } else if (publicidad.categoria_id !== undefined && publicidad.categoria_id !== null) {
-                categoriaId = publicidad.categoria_id;
-            } else if (publicidad.id_categoria_id !== undefined && publicidad.id_categoria_id !== null) {
+                console.log(`✅ Campo id_categoria encontrado: ${categoriaId}`);
+            }
+            // SEGUNDO: Si no, buscar en otros campos posibles
+            else if (publicidad.id_categoria_id !== undefined && publicidad.id_categoria_id !== null) {
                 categoriaId = publicidad.id_categoria_id;
-            } else if (publicidad.categoria && typeof publicidad.categoria === 'object') {
-                categoriaId = publicidad.categoria.id_categoria || publicidad.categoria.id;
+                console.log(`✅ Campo id_categoria_id encontrado: ${categoriaId}`);
+            }
+            else if (publicidad.categoria_id !== undefined && publicidad.categoria_id !== null) {
+                categoriaId = publicidad.categoria_id;
+                console.log(`✅ Campo categoria_id encontrado: ${categoriaId}`);
+            }
+            else if (publicidad.categoria !== undefined && publicidad.categoria !== null) {
+                categoriaId = publicidad.categoria;
+                console.log(`✅ Campo categoria encontrado: ${categoriaId}`);
             }
             
-            // Si encontramos un ID de categoría, buscar en las categorías
-            if (categoriaId) {
-                const categoria = categoriasData.find(cat => {
-                    const catId = cat.id_categoria || cat.id;
-                    return catId == categoriaId;
-                });
-                
-                if (categoria) {
-                    return categoria.nombre_categoria;
-                }
+            if (!categoriaId) {
+                console.log('❌ NO SE ENCONTRÓ ID DE CATEGORÍA');
+                console.log('📊 Campos disponibles:', Object.keys(publicidad));
+                return 'Sin categoría';
             }
             
-            // Si no encontramos categoría de ninguna forma
-            return 'Categoría no asignada';
+            // Convertir a número si es posible
+            const catIdNum = Number(categoriaId);
+            console.log(`🔍 Buscando categoría con ID: ${catIdNum} en ${categoriasData.length} categorías`);
+            
+            // BUSCAR EN LAS CATEGORÍAS DISPONIBLES
+            const categoria = categoriasData.find(cat => {
+                // Extraer ID de diferentes formas posibles
+                const catId = cat.id_categoria || cat.id || cat.categoria_id;
+                return Number(catId) === catIdNum;
+            });
+            
+            if (categoria) {
+                const nombre = categoria.nombre_categoria || categoria.nombre || `Categoría #${catIdNum}`;
+                console.log(`✅✅✅ Categoría ENCONTRADA: ${nombre} (ID: ${catIdNum})`);
+                return nombre;
+            }
+            
+            console.log('❌❌❌ No se encontró categoría con ID:', catIdNum);
+            console.log('📋 Categorías disponibles:', categoriasData.map(c => ({
+                id_categoria: c.id_categoria,
+                id: c.id,
+                categoria_id: c.categoria_id,
+                nombre: c.nombre_categoria || c.nombre
+            })));
+            
+            return `Categoría #${catIdNum}`;
         }
 
         // Función para obtener nombre de usuario por ID - VERSIÓN MEJORADA
@@ -814,16 +1009,17 @@
             container.innerHTML = categoriasHTML;
         }
 
-        // Filtrar publicidades por categoría
+        // FUNCIÓN CORREGIDA: Filtrar publicidades por categoría
         function filterByCategory(categoriaId) {
             if (!requireLogin()) return;
             
             console.log(`🔍 Filtrando por categoría ID: ${categoriaId}`);
+            console.log('📋 Total de publicidades:', publicidadesData.length);
             
             // Encontrar la categoría seleccionada
             const categoria = categoriasData.find(cat => {
                 const catId = cat.id_categoria || cat.id;
-                return catId == categoriaId;
+                return Number(catId) === Number(categoriaId);
             });
             
             if (!categoria) {
@@ -836,12 +1032,24 @@
             // Actualizar UI de categorías
             updateCategoryUI(categoriaId);
             
-            // Filtrar publicidades por categoría
+            // Filtrar publicidades por categoría - BUSCAR EN EL CAMPO CORRECTO id_categoria
             const publicidadesFiltradas = publicidadesData.filter(publicidad => {
-                const categoriaPublicidad = getNombreCategoria(publicidad);
-                const categoriaNombre = categoria.nombre_categoria;
+                // Buscar el ID de categoría en el campo correcto id_categoria
+                const categoriaPublicidadId = publicidad.id_categoria;
                 
-                return categoriaPublicidad === categoriaNombre;
+                if (categoriaPublicidadId !== undefined && categoriaPublicidadId !== null) {
+                    console.log(`🔍 Publicidad ${publicidad.id_publicidad}: id_categoria = ${categoriaPublicidadId} (buscando ${categoriaId})`);
+                    return Number(categoriaPublicidadId) === Number(categoriaId);
+                }
+                
+                // Si no hay id_categoria, buscar en otros campos posibles
+                const altCategoriaId = publicidad.id_categoria_id || publicidad.categoria_id;
+                if (altCategoriaId !== undefined && altCategoriaId !== null) {
+                    console.log(`🔍 Publicidad ${publicidad.id_publicidad}: campo alternativo = ${altCategoriaId} (buscando ${categoriaId})`);
+                    return Number(altCategoriaId) === Number(categoriaId);
+                }
+                
+                return false;
             });
             
             console.log(`✅ Encontradas ${publicidadesFiltradas.length} publicidades para la categoría "${categoria.nombre_categoria}"`);
@@ -914,6 +1122,11 @@
             document.getElementById('totalResults').textContent = total;
             document.getElementById('empresasCount').textContent = empresas.length;
             document.getElementById('talentosCount').textContent = talentos.length;
+            
+            if (categoria) {
+                document.getElementById('categoryFilterText').style.display = 'inline';
+                document.getElementById('categoryName').textContent = categoria.nombre_categoria;
+            }
         }
 
         // Renderizar empresas/servicios filtrados
@@ -1746,6 +1959,36 @@
 
         function showError(message) {
             alert(`❌ Error: ${message}`);
+        }
+        
+        // Función de depuración para verificar la estructura de los datos
+        function debugCategoriaPublicidad() {
+            console.log('=== DEBUG CATEGORÍAS-PUBLICIDADES ===');
+            console.log(`📊 Total categorías: ${categoriasData.length}`);
+            console.log(`📊 Total publicidades: ${publicidadesData.length}`);
+            
+            // Mostrar todas las categorías
+            console.log('\n📋 CATEGORÍAS DISPONIBLES:');
+            categoriasData.forEach((cat, i) => {
+                const catId = cat.id_categoria || cat.id;
+                console.log(`${i+1}. ID: ${catId} - "${cat.nombre_categoria || cat.nombre}"`);
+            });
+            
+            // Mostrar publicidades y sus categorías
+            console.log('\n🔍 PUBLICIDADES Y SUS CATEGORÍAS:');
+            publicidadesData.forEach((pub, i) => {
+                console.log(`\nPublicidad ${i+1}: "${pub.titulo_publicidad}"`);
+                console.log(`  - ID: ${pub.id_publicidad}`);
+                
+                // Mostrar todos los campos relacionados con categoría
+                for (let key in pub) {
+                    if (key.toLowerCase().includes('categoria') || key === 'id_categoria' || key === 'categoria_id') {
+                        console.log(`  - ${key}: ${pub[key]} (tipo: ${typeof pub[key]})`);
+                    }
+                }
+                
+                console.log(`  - Función getNombreCategoria(): "${getNombreCategoria(pub)}"`);
+            });
         }
     </script>
 </body>

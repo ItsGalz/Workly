@@ -229,7 +229,7 @@
                             <div class="text-center">
                                 <p class="mb-0">
                                     ¿Ya tienes una cuenta? 
-                                    <a href="{% url 'login' %}" class="login-link">Iniciar sesión</a>
+                                    <a href="/login/" class="login-link">Iniciar sesión</a>
                                 </p>
                             </div>
                         </form>
@@ -245,6 +245,8 @@
     <!-- JavaScript para horarios y conexión con backend -->
     <script>
         const BACKEND_URL = 'http://127.0.0.1:8001';  // Tu backend
+        const REGISTER_ENDPOINT = `${BACKEND_URL}/auth/register/`;
+        const LOGIN_FRONTEND_URL = '/login/';  // URL del frontend para login
 
         // Días de la semana
         const daysOfWeek = [
@@ -346,11 +348,20 @@
                 alert.innerHTML = message;
             }
             alert.style.display = 'block';
+            
+            // Auto-ocultar alertas de error después de 5 segundos
+            if (alertId === 'errorAlert' || alertId === 'validationAlert') {
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 5000);
+            }
         }
 
         // Validación del formulario
         async function handleRegister(event) {
             event.preventDefault();
+            
+            console.log('🎯 Iniciando registro...');
             
             // Ocultar alertas previas
             showAlert('successAlert');
@@ -358,18 +369,26 @@
             showAlert('validationAlert');
 
             const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
+            const confirm_password = document.getElementById('confirm_password').value;
             const nombreCompleto = document.getElementById('nombre_completo').value;
             const correoElectronico = document.getElementById('correo_electronico').value;
             const tipoUsuario = document.getElementById('tipo_usuario').value;
             
+            console.log('📋 Datos del formulario:', {
+                nombreCompleto,
+                correoElectronico,
+                tipoUsuario,
+                passwordLength: password.length,
+                confirmPasswordLength: confirm_password.length
+            });
+            
             // Validaciones básicas
-            if (!nombreCompleto || !correoElectronico || !tipoUsuario || !password) {
+            if (!nombreCompleto || !correoElectronico || !tipoUsuario || !password || !confirm_password) {
                 showAlert('validationAlert', 'Por favor, completa todos los campos requeridos.');
                 return false;
             }
             
-            if (password !== confirmPassword) {
+            if (password !== confirm_password) {
                 showAlert('validationAlert', 'Las contraseñas no coinciden. Por favor, verifica.');
                 return false;
             }
@@ -389,7 +408,7 @@
             submitSpinner.style.display = 'inline-block';
 
             try {
-                // Preparar datos EXACTAMENTE como los espera tu modelo
+                // Preparar datos EXACTAMENTE como los espera tu backend
                 const formData = {
                     nombre_completo: nombreCompleto,
                     correo_electronico: correoElectronico,
@@ -397,80 +416,73 @@
                     descripcion_perfil: document.getElementById('descripcion_perfil').value || '',
                     telefono_contacto: document.getElementById('telefono_contacto').value || '',
                     password: password,
+                    password_confirm: confirm_password,
                     horarios_atencion: prepareScheduleData()
                 };
 
                 console.log('📤 Enviando datos al backend:', formData);
+                console.log('🔗 Endpoint:', REGISTER_ENDPOINT);
 
-                // Enviar datos al backend - PRUEBA DIFERENTES ENDPOINTS
-                const endpoints = [
-                    `${BACKEND_URL}/auth/register/`,
-                    `${BACKEND_URL}/api/auth/register/`,
-                    `${BACKEND_URL}/api/usuarios/`
-                ];
+                // Enviar datos al backend usando el endpoint correcto
+                const response = await fetch(REGISTER_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
 
-                let response = null;
-                let data = null;
+                console.log('📥 Respuesta del servidor - Status:', response.status);
 
-                for (const endpoint of endpoints) {
-                    try {
-                        console.log(`🔍 Probando endpoint: ${endpoint}`);
-                        response = await fetch(endpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(formData)
-                        });
-
-                        if (response.ok) {
-                            data = await response.json();
-                            console.log(`✅ Éxito en: ${endpoint}`, data);
-                            break;
-                        } else {
-                            const errorData = await response.json();
-                            console.log(`❌ Error en ${endpoint}:`, errorData);
-                        }
-                    } catch (error) {
-                        console.log(`❌ Conexión falló en ${endpoint}:`, error);
-                    }
-                }
-
-                if (!response || !response.ok) {
-                    const errorData = data || { detail: 'No se pudo conectar con ningún endpoint' };
-                    const errorMessage = errorData.detail || errorData.error || errorData.message || 'Error al crear la cuenta';
-                    showAlert('errorAlert', `Error: ${errorMessage}`);
-                    return;
-                }
-
-                // Registro exitoso
-                if (data.access) {
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Registro exitoso:', data);
+                    
+                    // Mostrar mensaje de éxito
                     showAlert('successAlert', '¡Cuenta creada exitosamente! Redirigiendo al login...');
                     
-                    // Guardar tokens
-                    localStorage.setItem('access_token', data.access);
-                    if (data.refresh) {
-                        localStorage.setItem('refresh_token', data.refresh);
+                    // Limpiar formulario
+                    document.getElementById('registerForm').reset();
+                    
+                    // Redirigir al LOGIN DEL FRONTEND después de 2 segundos
+                    setTimeout(() => {
+                        console.log('🔄 Redirigiendo a:', LOGIN_FRONTEND_URL);
+                        window.location.href = LOGIN_FRONTEND_URL;
+                    }, 2000);
+                    
+                } else {
+                    const errorData = await response.json();
+                    console.error('❌ Error del servidor:', errorData);
+                    
+                    // Manejar errores específicos
+                    let errorMessage = 'Error al crear la cuenta.';
+                    
+                    if (errorData.detail) {
+                        errorMessage = errorData.detail;
+                    } else if (errorData.error) {
+                        errorMessage = errorData.error;
+                    } else if (errorData.message) {
+                        errorMessage = errorData.message;
+                    } else if (errorData.non_field_errors) {
+                        errorMessage = errorData.non_field_errors.join(', ');
+                    } else if (typeof errorData === 'object') {
+                        // Mostrar errores de campo específicos
+                        const fieldErrors = [];
+                        for (const [field, errors] of Object.entries(errorData)) {
+                            if (Array.isArray(errors)) {
+                                fieldErrors.push(`${field}: ${errors.join(', ')}`);
+                            }
+                        }
+                        if (fieldErrors.length > 0) {
+                            errorMessage = fieldErrors.join(' | ');
+                        }
                     }
                     
-                    // Redirigir después de 2 segundos
-                    setTimeout(() => {
-                        window.location.href = '/login/';
-                    }, 2000);
-                    
-                } else if (data.id_usuario) {
-                    // Si el registro fue exitoso pero no devuelve token
-                    showAlert('successAlert', '¡Cuenta creada exitosamente! Ahora puedes iniciar sesión.');
-                    
-                    setTimeout(() => {
-                        window.location.href = '/login/';
-                    }, 2000);
-                } else {
-                    showAlert('errorAlert', 'Respuesta inesperada del servidor.');
+                    showAlert('errorAlert', `Error: ${errorMessage}`);
                 }
 
             } catch (error) {
-                console.error('❌ Error de conexión:', error);
+                console.error('💥 Error de conexión:', error);
                 showAlert('errorAlert', 'Error de conexión con el servidor. Verifica que el backend esté ejecutándose.');
             } finally {
                 // Restaurar botón
@@ -479,13 +491,57 @@
                 submitSpinner.style.display = 'none';
             }
         }
-
+    
         // Inicializar horarios al cargar la página
         document.addEventListener('DOMContentLoaded', function() {
             generateScheduleFields();
             
             // Asignar el event listener al formulario
-            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            const registerForm = document.getElementById('registerForm');
+            if (registerForm) {
+                registerForm.addEventListener('submit', handleRegister);
+                console.log('✅ Formulario de registro listo');
+            } else {
+                console.error('❌ No se encontró el formulario de registro');
+            }
+            
+            // Agregar validación en tiempo real para contraseñas
+            const passwordInput = document.getElementById('password');
+            const confirmPasswordInput = document.getElementById('confirm_password');
+            
+            if (passwordInput && confirmPasswordInput) {
+                function validatePasswords() {
+                    const password = passwordInput.value;
+                    const confirmPassword = confirmPasswordInput.value;
+                    
+                    if (password && confirmPassword && password !== confirmPassword) {
+                        confirmPasswordInput.classList.add('is-invalid');
+                        confirmPasswordInput.classList.remove('is-valid');
+                    } else if (password && confirmPassword && password === confirmPassword) {
+                        confirmPasswordInput.classList.remove('is-invalid');
+                        confirmPasswordInput.classList.add('is-valid');
+                    } else {
+                        confirmPasswordInput.classList.remove('is-invalid', 'is-valid');
+                    }
+                }
+                
+                passwordInput.addEventListener('input', validatePasswords);
+                confirmPasswordInput.addEventListener('input', validatePasswords);
+            }
+            
+            // Test de conexión al backend
+            console.log('🔍 Probando conexión con el backend...');
+            fetch(`${BACKEND_URL}/`)
+                .then(response => {
+                    if (response.ok) {
+                        console.log('✅ Backend disponible');
+                    } else {
+                        console.warn('⚠️ Backend respondió con error');
+                    }
+                })
+                .catch(error => {
+                    console.error('❌ No se puede conectar al backend:', error);
+                });
         });
     </script>
 </body>

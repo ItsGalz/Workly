@@ -1,3 +1,5 @@
+[file name]: publicarme.html
+[file content begin]
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -170,6 +172,13 @@
             box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
         }
         
+        .publish-btn:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
         .info-card {
             background: white;
             border-radius: 12px;
@@ -232,6 +241,62 @@
             font-size: 14px;
             font-weight: 600;
             backdrop-filter: blur(10px);
+        }
+        
+        /* Estilos para la información de membresía */
+        .membership-status {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #3498db;
+        }
+        
+        .membership-status.warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border-left-color: #ffc107;
+        }
+        
+        .membership-status.error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border-left-color: #dc3545;
+        }
+        
+        .membership-status.success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border-left-color: #28a745;
+        }
+        
+        .publications-counter {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .upgrade-prompt {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid #4caf50;
+            text-align: center;
+        }
+        
+        .upgrade-btn {
+            background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s;
+        }
+        
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
         }
         
         @media (max-width: 992px) {
@@ -335,44 +400,37 @@
                         <input type="hidden" id="userId" value="">
                         <!-- Campo oculto para el tipo de usuario -->
                         <input type="hidden" id="userType" value="">
+                        <!-- Campo oculto para el tipo de membresía del usuario -->
+                        <input type="hidden" id="tipoMembresiaVinculada" value="">
+                        
+                        <!-- Estado de membresía y publicaciones -->
+                        <div id="membershipStatusContainer"></div>
                         
                         <div class="form-group">
-                            <label for="nombre" class="form-label">Nombre del talento</label>
+                            <label for="nombre" class="form-label">Nombre</label>
                             <input type="text" id="nombre" class="form-control" placeholder="Ingresa tu Nombre completo">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="titulo_publicidad" class="form-label">Título de la publicación</label>
+                            <input type="text" id="titulo_publicidad" class="form-control" placeholder="Ingresa un título atractivo para tu publicación">
                         </div>
                         
                         <div class="form-group">
                             <label for="categoria" class="form-label">Categoría</label>
                             <select id="categoria" class="form-control">
-                                <option value="" disabled selected>Selecciona una categoría</option>
-                                <option value="1">⚡ Electricidad</option>
-                                <option value="2">🧱 Construcción</option>
-                                <option value="3">🔧 Plomería</option>
-                                <option value="4">🛠️ Carpintería</option>
-                                <option value="5">❄️ Refrigeración / Aire Acondicionado</option>
-                                <option value="6">🚗 Mecánica automotriz</option>
-                                <option value="7">🧳 Turismo / Guías / Hotelería</option>
-                                <option value="8">🏡 Limpieza</option>
-                                <option value="9">🎂 Repostería</option>
-                                <option value="10">🎓 Tutorías / Educación</option>
-                                <option value="11">👶 Cuidado infantil / Adultos mayores</option>
-                                <option value="12">💇 Belleza</option>
-                                <option value="13">🔮 Otros</option>
+                                <option value="" disabled selected>Cargando categorías...</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
-                            <label for="membresia" class="form-label">Tipo de Membresía</label>
-                            <select id="membresia" class="form-control">
-                                <option value="basica">Básica</option>
-                                <option value="premium">Premium</option>
-                                <option value="empresa">Empresa</option>
-                                <option value="gratuita">Gratuita</option>
-                                <option value="estandar">Estándar</option>
-                                <option value="1">1 - Básica</option>
-                                <option value="2">2 - Premium</option>
-                                <option value="3">3 - Empresa</option>
-                            </select>
+                            <label for="horario_disponible" class="form-label">Horario disponible</label>
+                            <input type="text" id="horario_disponible" class="form-control" placeholder="Ej: Lunes a Viernes 8:00-18:00, Sábados 9:00-13:00">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="fecha_publicacion" class="form-label">Fecha de publicación</label>
+                            <input type="date" id="fecha_publicacion" class="form-control">
                         </div>
                         
                         <div class="form-group">
@@ -386,18 +444,13 @@
                         </div>
                         
                         <div class="form-group">
-                            <label for="experiencia" class="form-label">Años de experiencia</label>
-                            <input type="number" id="experiencia" class="form-control" placeholder="Años de experiencia en el campo">
-                        </div>
-                        
-                        <div class="form-group">
                             <label for="descripcion" class="form-label">Descripción</label>
                             <textarea id="descripcion" class="form-control form-textarea" placeholder="Describe tus habilidades, experiencia y servicios que ofreces..."></textarea>
                         </div>
                         
                         <div class="divider"></div>
                         
-                        <button type="button" class="publish-btn" onclick="submitTalentForm()">Publicar Talento</button>
+                        <button type="button" class="publish-btn" id="publishButton" onclick="submitTalentForm()">Publicar</button>
                     </form>
                 </div>
                 
@@ -417,6 +470,15 @@
                         <p>• Sistema de reseñas y calificaciones</p>
                         <p>• Soporte y asistencia continua</p>
                     </div>
+                    
+                    <div class="info-card">
+                        <h3>📋 Límites por Membresía</h3>
+                        <div id="membershipLimitsInfo">
+                            <p><strong>Básica:</strong> 3 publicaciones activas</p>
+                            <p><strong>Estándar:</strong> 10 publicaciones activas</p>
+                            <p><strong>Premium:</strong> Publicaciones ilimitadas</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -430,6 +492,43 @@
     <script>
         const BACKEND_URL = 'http://127.0.0.1:8001';
         let userData = null;
+        let userPublications = [];
+        let currentMembership = null;
+        let currentPublicationsCount = 0;
+        let userId = null;
+        let categoriasData = []; // Variable para almacenar las categorías reales
+
+        // Límites de publicaciones por tipo de membresía
+        const MEMBERSHIP_LIMITS = {
+            'visitante': 0,
+            'basica': 3,
+            'básica': 3,
+            'estandar': 10,
+            'estándar': 10,
+            'standard': 10,
+            'premium': 999,
+            'empresa': 999,
+            'enterprise': 999
+        };
+
+        // Mapeo de nombres de membresía para normalización
+        const MEMBERSHIP_NAME_MAP = {
+            'basica': 'básica',
+            'standard': 'estándar', 
+            'estandar': 'estándar',
+            'premium': 'premium',
+            'empresa': 'empresa',
+            'enterprise': 'empresa',
+            'visitante': 'visitante'
+        };
+
+        // Mapeo de membresías a valores numéricos para el backend
+        const MEMBERSHIP_VALUES = {
+            'básica': 1,
+            'estándar': 2,
+            'premium': 3,
+            'empresa': 3
+        };
 
         // Verificar autenticación y cargar datos del usuario al cargar la página
         document.addEventListener('DOMContentLoaded', async function() {
@@ -469,8 +568,25 @@
                 // Guardar datos del usuario en localStorage para acceso posterior
                 localStorage.setItem('user_data', JSON.stringify(userData));
                 
+                // OBTENER EL ID DEL USUARIO
+                userId = await getUserIdAlternative(token);
+                if (userId) {
+                    document.getElementById('userId').value = userId;
+                    console.log(`✅ ID del usuario obtenido: ${userId}`);
+                } else {
+                    console.error('❌ No se pudo obtener el ID del usuario');
+                    alert('Error: No se pudo obtener tu información de usuario. Por favor, contacta al soporte.');
+                    return;
+                }
+                
+                // Cargar categorías reales desde el backend
+                await loadCategories();
+                
                 // Detectar y configurar el tipo de usuario
                 await detectAndConfigureUserType(userData);
+                
+                // Cargar publicaciones del usuario para verificar límites
+                await loadUserPublications();
                 
                 // Autocompletar formulario con datos del usuario
                 autocompleteFormWithUserData(userData);
@@ -483,7 +599,469 @@
             }
         }
 
-        // FUNCIÓN NUEVA - Detectar y configurar el tipo de usuario
+        // NUEVA FUNCIÓN: Cargar categorías reales desde el backend
+        async function loadCategories() {
+            const token = localStorage.getItem('access_token');
+            if (!token) return;
+
+            try {
+                console.log('🔄 Cargando categorías desde el backend...');
+                const response = await fetch(`${BACKEND_URL}/api/categorias/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Manejar diferentes formatos de respuesta
+                    if (Array.isArray(data)) {
+                        categoriasData = data;
+                    } else if (data.results && Array.isArray(data.results)) {
+                        categoriasData = data.results;
+                    } else if (data.data && Array.isArray(data.data)) {
+                        categoriasData = data.data;
+                    } else {
+                        // Intentar encontrar un array en el objeto
+                        for (const key in data) {
+                            if (Array.isArray(data[key])) {
+                                categoriasData = data[key];
+                                break;
+                            }
+                        }
+                    }
+                    
+                    console.log(`✅ Categorías cargadas: ${categoriasData.length} categorías`);
+                    console.log('📋 Lista de categorías:', categoriasData.map(c => ({
+                        id: c.id_categoria || c.id,
+                        nombre: c.nombre_categoria
+                    })));
+                    
+                    // Actualizar el select de categorías con las reales
+                    updateCategorySelect();
+                    
+                } else {
+                    console.error('❌ Error al cargar categorías:', response.status);
+                    // Crear categorías de emergencia si hay error
+                    createEmergencyCategories();
+                }
+            } catch (error) {
+                console.error('💥 Error cargando categorías:', error);
+                // Crear categorías de emergencia si hay error
+                createEmergencyCategories();
+            }
+        }
+
+        // FUNCIÓN: Actualizar el select de categorías con las reales
+        function updateCategorySelect() {
+            const select = document.getElementById('categoria');
+            
+            // Limpiar opciones
+            select.innerHTML = '';
+            
+            // Agregar opción por defecto
+            const defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            defaultOption.textContent = "Selecciona una categoría";
+            select.appendChild(defaultOption);
+            
+            // Agregar categorías reales
+            categoriasData.forEach(categoria => {
+                const categoriaId = categoria.id_categoria || categoria.id;
+                const categoriaNombre = categoria.nombre_categoria || categoria.nombre;
+                const icono = getCategoryIcon(categoriaNombre);
+                
+                const option = document.createElement('option');
+                option.value = categoriaId;
+                option.textContent = `${icono} ${categoriaNombre}`;
+                select.appendChild(option);
+            });
+            
+            console.log(`✅ Select de categorías actualizado con ${categoriasData.length} opciones`);
+        }
+
+        // FUNCIÓN: Obtener icono para categoría
+        function getCategoryIcon(categoriaNombre) {
+            const iconMap = {
+                'electricidad': '⚡',
+                'construcción': '🧱',
+                'plomería': '🔧',
+                'carpintería': '🛠️',
+                'refrigeración': '❄️',
+                'mecánica': '🚗',
+                'turismo': '🧳',
+                'limpieza': '🏡',
+                'repostería': '🎂',
+                'educación': '🎓',
+                'cuidado': '👶',
+                'belleza': '💇',
+                'programación': '💻',
+                'diseño': '🎨',
+                'general': '🔮'
+            };
+
+            const lowerName = categoriaNombre.toLowerCase();
+            for (const [key, icon] of Object.entries(iconMap)) {
+                if (lowerName.includes(key)) {
+                    return icon;
+                }
+            }
+            return '🔮';
+        }
+
+        // FUNCIÓN: Crear categorías de emergencia si falla la carga
+        function createEmergencyCategories() {
+            console.log('⚠️ Usando categorías de emergencia');
+            categoriasData = [
+                { id_categoria: 1, nombre_categoria: 'Electricidad' },
+                { id_categoria: 2, nombre_categoria: 'Construcción' },
+                { id_categoria: 3, nombre_categoria: 'Plomería' },
+                { id_categoria: 4, nombre_categoria: 'Carpintería' },
+                { id_categoria: 5, nombre_categoria: 'Refrigeración / Aire Acondicionado' },
+                { id_categoria: 6, nombre_categoria: 'Mecánica automotriz' },
+                { id_categoria: 7, nombre_categoria: 'Turismo / Guías / Hotelería' },
+                { id_categoria: 8, nombre_categoria: 'Limpieza' },
+                { id_categoria: 9, nombre_categoria: 'Repostería' },
+                { id_categoria: 10, nombre_categoria: 'Tutorías / Educación' },
+                { id_categoria: 11, nombre_categoria: 'Cuidado infantil / Adultos mayores' },
+                { id_categoria: 12, nombre_categoria: 'Belleza' },
+                { id_categoria: 13, nombre_categoria: 'Otros' }
+            ];
+            updateCategorySelect();
+        }
+
+        // FUNCIÓN: Obtener ID del usuario de forma alternativa
+        async function getUserIdAlternative(token) {
+            console.log('🔍 Buscando ID del usuario de forma alternativa...');
+            
+            // PRIMER INTENTO: Buscar en localStorage de compras anteriores
+            const userPurchases = JSON.parse(localStorage.getItem('user_purchases') || '[]');
+            if (userPurchases.length > 0 && userPurchases[0].user_id && userPurchases[0].user_id !== 'unknown') {
+                console.log(`✅ ID encontrado en compras anteriores: ${userPurchases[0].user_id}`);
+                return userPurchases[0].user_id;
+            }
+            
+            // SEGUNDO INTENTO: Buscar en datos de perfil guardados
+            const storedUserData = localStorage.getItem('user_data');
+            if (storedUserData) {
+                try {
+                    const parsedData = JSON.parse(storedUserData);
+                    const foundId = getUserIdFromObject(parsedData);
+                    if (foundId) {
+                        console.log(`✅ ID encontrado en user_data: ${foundId}`);
+                        return foundId;
+                    }
+                } catch (e) {
+                    console.error('Error parseando user_data:', e);
+                }
+            }
+            
+            // TERCER INTENTO: Hacer una llamada adicional al backend para obtener el ID
+            try {
+                console.log('🔄 Intentando obtener ID desde endpoint adicional...');
+                const userResponse = await fetch(`${BACKEND_URL}/auth/me/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (userResponse.ok) {
+                    const userInfo = await userResponse.json();
+                    const foundId = getUserIdFromObject(userInfo);
+                    if (foundId) {
+                        console.log(`✅ ID encontrado en /auth/me/: ${foundId}`);
+                        return foundId;
+                    }
+                }
+            } catch (error) {
+                console.log('❌ Endpoint /auth/me/ no disponible');
+            }
+            
+            // CUARTO INTENTO: Intentar con otro endpoint común
+            try {
+                console.log('🔄 Intentando obtener ID desde /api/user/...');
+                const userResponse = await fetch(`${BACKEND_URL}/api/user/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (userResponse.ok) {
+                    const userInfo = await userResponse.json();
+                    const foundId = getUserIdFromObject(userInfo);
+                    if (foundId) {
+                        console.log(`✅ ID encontrado en /api/user/: ${foundId}`);
+                        return foundId;
+                    }
+                }
+            } catch (error) {
+                console.log('❌ Endpoint /api/user/ no disponible');
+            }
+            
+            // QUINTO INTENTO: Generar un ID temporal basado en el token
+            console.log('🔄 Generando ID temporal desde token...');
+            const tempId = generateTempIdFromToken(token);
+            console.log(`✅ ID temporal generado: ${tempId}`);
+            return tempId;
+        }
+
+        // FUNCIÓN: Extraer ID de un objeto de usuario
+        function getUserIdFromObject(userObject) {
+            if (!userObject) return null;
+            
+            // Buscar en diferentes propiedades posibles
+            const possibleIdFields = [
+                'id_usuario', 'id', 'user_id', 'usuario_id', 'userId',
+                'idUsuario', 'ID', 'Id', 'sub', 'user_sub'
+            ];
+            
+            // Buscar en el objeto principal
+            for (let field of possibleIdFields) {
+                if (userObject[field] !== undefined && userObject[field] !== null) {
+                    console.log(`✅ ID encontrado en campo: ${field} = ${userObject[field]}`);
+                    return userObject[field].toString();
+                }
+            }
+            
+            // Buscar en data si existe
+            if (userObject.data && typeof userObject.data === 'object') {
+                for (let field of possibleIdFields) {
+                    if (userObject.data[field] !== undefined && userObject.data[field] !== null) {
+                        console.log(`✅ ID encontrado en data.${field} = ${userObject.data[field]}`);
+                        return userObject.data[field].toString();
+                    }
+                }
+            }
+            
+            // Buscar en user si existe
+            if (userObject.user && typeof userObject.user === 'object') {
+                for (let field of possibleIdFields) {
+                    if (userObject.user[field] !== undefined && userObject.user[field] !== null) {
+                        console.log(`✅ ID encontrado en user.${field} = ${userObject.user[field]}`);
+                        return userObject.user[field].toString();
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        // FUNCIÓN: Generar ID temporal desde token
+        function generateTempIdFromToken(token) {
+            // Crear un hash simple del token para usar como ID temporal
+            let hash = 0;
+            for (let i = 0; i < token.length; i++) {
+                const char = token.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Convertir a 32-bit integer
+            }
+            return 'temp_' + Math.abs(hash).toString();
+        }
+
+        // FUNCIÓN: Cargar publicaciones del usuario para verificar límites
+        async function loadUserPublications() {
+            const token = localStorage.getItem('access_token');
+            if (!token || !userId) return;
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/publicidades/`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Manejar diferentes formatos de respuesta
+                    let allPublications = [];
+                    if (Array.isArray(data)) {
+                        allPublications = data;
+                    } else if (data.results && Array.isArray(data.results)) {
+                        allPublications = data.results;
+                    } else if (data.data && Array.isArray(data.data)) {
+                        allPublications = data.data;
+                    } else {
+                        allPublications = [];
+                    }
+                    
+                    // Filtrar publicaciones activas del usuario actual
+                    userPublications = allPublications.filter(publication => {
+                        // BUSCAR EN CAMPOS REALES DE LA BASE DE DATOS
+                        const publicationUserId = publication.id_usuario_id || publication.id_usuario || publication.usuario_id;
+                        const isActive = publication.estado_publicacion === 'activa';
+                        return publicationUserId == userId && isActive;
+                    });
+                    
+                    currentPublicationsCount = userPublications.length;
+                    console.log(`📊 Publicaciones activas del usuario: ${currentPublicationsCount}`);
+                    
+                    // Actualizar estado de membresía y límites
+                    updateMembershipStatus();
+                    
+                } else {
+                    console.error('❌ Error al cargar publicaciones:', response.status);
+                }
+            } catch (error) {
+                console.error('💥 Error cargando publicaciones:', error);
+            }
+        }
+
+        // FUNCIÓN: Actualizar estado de membresía y límites
+        function updateMembershipStatus() {
+            const container = document.getElementById('membershipStatusContainer');
+            const publishButton = document.getElementById('publishButton');
+            
+            // Determinar membresía actual
+            currentMembership = detectCurrentMembership();
+            
+            // Normalizar el nombre de la membresía
+            const normalizedMembership = normalizeMembershipName(currentMembership);
+            const membershipLimit = MEMBERSHIP_LIMITS[normalizedMembership] || 0;
+            
+            // Obtener valor numérico para el backend
+            const membershipValue = MEMBERSHIP_VALUES[normalizedMembership] || 1;
+            document.getElementById('tipoMembresiaVinculada').value = membershipValue;
+            
+            console.log(`🎫 Membresía detectada: ${currentMembership} -> Normalizada: ${normalizedMembership}, Valor: ${membershipValue}, Límite: ${membershipLimit}, Publicaciones actuales: ${currentPublicationsCount}`);
+            
+            let statusHTML = '';
+            let canPublish = true;
+            let statusClass = 'membership-status success';
+            
+            if (normalizedMembership === 'visitante') {
+                statusHTML = `
+                    <div class="membership-status error">
+                        <h4>🚫 Membresía Requerida</h4>
+                        <p>Necesitas una membresía activa para publicar.</p>
+                        <div class="upgrade-prompt">
+                            <p>💎 <strong>Actualiza tu membresía</strong> para comenzar a publicar</p>
+                            <button class="upgrade-btn" onclick="goToMemberships()">Ver Planes</button>
+                        </div>
+                    </div>
+                `;
+                canPublish = false;
+                statusClass = 'membership-status error';
+                
+            } else if (currentPublicationsCount >= membershipLimit) {
+                statusHTML = `
+                    <div class="membership-status warning">
+                        <h4>📊 Límite de Publicaciones Alcanzado</h4>
+                        <p>Tu membresía <strong>${normalizedMembership.toUpperCase()}</strong> permite hasta <strong>${membershipLimit} publicaciones activas</strong>.</p>
+                        <p class="publications-counter">Publicaciones actuales: <strong>${currentPublicationsCount}/${membershipLimit}</strong></p>
+                        <div class="upgrade-prompt">
+                            <p>🚀 <strong>Actualiza tu membresía</strong> para publicar más</p>
+                            <button class="upgrade-btn" onclick="goToMemberships()">Mejorar Plan</button>
+                        </div>
+                    </div>
+                `;
+                canPublish = false;
+                statusClass = 'membership-status warning';
+                
+            } else {
+                const remaining = membershipLimit - currentPublicationsCount;
+                statusHTML = `
+                    <div class="membership-status success">
+                        <h4>✅ Membresía Activa - ${normalizedMembership.toUpperCase()}</h4>
+                        <p>Puedes publicar hasta <strong>${membershipLimit} publicaciones activas</strong>.</p>
+                        <p class="publications-counter">Publicaciones actuales: <strong>${currentPublicationsCount}/${membershipLimit}</strong> (${remaining} disponibles)</p>
+                    </div>
+                `;
+                canPublish = true;
+                statusClass = 'membership-status success';
+            }
+            
+            container.innerHTML = statusHTML;
+            
+            // Habilitar o deshabilitar botón de publicación
+            publishButton.disabled = !canPublish;
+            if (!canPublish) {
+                publishButton.innerHTML = 'Límite Alcanzado';
+                publishButton.style.background = 'linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%)';
+            } else {
+                // El texto del botón se establecerá en updateInterfaceForUserType
+                publishButton.style.background = 'linear-gradient(135deg, #2c3e50 0%, #3498db 100%)';
+            }
+        }
+
+        // FUNCIÓN: Normalizar nombres de membresía
+        function normalizeMembershipName(membershipName) {
+            if (!membershipName) return 'visitante';
+            
+            const lowerName = membershipName.toLowerCase().trim();
+            
+            // Buscar coincidencias exactas primero
+            if (MEMBERSHIP_NAME_MAP[lowerName]) {
+                return MEMBERSHIP_NAME_MAP[lowerName];
+            }
+            
+            // Buscar coincidencias parciales
+            for (const key in MEMBERSHIP_NAME_MAP) {
+                if (lowerName.includes(key)) {
+                    return MEMBERSHIP_NAME_MAP[key];
+                }
+            }
+            
+            // Coincidencias específicas comunes
+            if (lowerName.includes('básic') || lowerName.includes('basic')) return 'básica';
+            if (lowerName.includes('estándar') || lowerName.includes('estandar') || lowerName.includes('standard')) return 'estándar';
+            if (lowerName.includes('premium') || lowerName.includes('premiun')) return 'premium';
+            if (lowerName.includes('empresa') || lowerName.includes('enterprise') || lowerName.includes('business')) return 'empresa';
+            
+            return 'visitante';
+        }
+
+        // FUNCIÓN: Detectar membresía actual del usuario
+        function detectCurrentMembership() {
+            // Primero verificar en localStorage (actualizado desde la compra)
+            const storedMembership = localStorage.getItem('current_membership');
+            if (storedMembership) {
+                console.log(`✅ Membresía desde localStorage: ${storedMembership}`);
+                return storedMembership;
+            }
+            
+            // Luego buscar en los datos del usuario
+            if (userData) {
+                // Buscar en diferentes propiedades posibles
+                const possibleMembershipFields = [
+                    'tipo_membresia', 'membresia', 'membership', 'tipoMembresia',
+                    'membresia_tipo', 'membership_type', 'plan', 'tipo_plan'
+                ];
+                
+                for (let field of possibleMembershipFields) {
+                    if (userData[field] && userData[field] !== null) {
+                        console.log(`✅ Membresía encontrada en campo: ${field} = ${userData[field]}`);
+                        return userData[field].toString();
+                    }
+                }
+                
+                // Buscar en objetos anidados
+                if (userData.data && typeof userData.data === 'object') {
+                    for (let field of possibleMembershipFields) {
+                        if (userData.data[field] && userData.data[field] !== null) {
+                            console.log(`✅ Membresía encontrada en data.${field} = ${userData.data[field]}`);
+                            return userData.data[field].toString();
+                        }
+                    }
+                }
+            }
+            
+            console.log('❌ No se pudo detectar la membresía, usando "visitante" por defecto');
+            return 'visitante';
+        }
+
+        // FUNCIÓN: Detectar y configurar el tipo de usuario
         async function detectAndConfigureUserType(userData) {
             console.log('🔍 Detectando tipo de usuario...');
             
@@ -506,7 +1084,7 @@
             }
         }
 
-        // FUNCIÓN NUEVA - Obtener el tipo de usuario
+        // FUNCIÓN: Obtener el tipo de usuario
         function getUserType(userData) {
             if (!userData) return null;
 
@@ -518,8 +1096,9 @@
 
             for (let field of possibleTypeFields) {
                 if (userData[field] !== undefined && userData[field] !== null) {
-                    console.log(`✅ Tipo encontrado en campo: ${field} = ${userData[field]}`);
-                    return userData[field].toString().toLowerCase();
+                    const value = userData[field].toString().toLowerCase();
+                    console.log(`✅ Tipo encontrado en campo ${field}: ${value}`);
+                    return value;
                 }
             }
 
@@ -527,65 +1106,110 @@
             if (userData.data && typeof userData.data === 'object') {
                 for (let field of possibleTypeFields) {
                     if (userData.data[field] !== undefined && userData.data[field] !== null) {
-                        console.log(`✅ Tipo encontrado en data.${field} = ${userData.data[field]}`);
-                        return userData.data[field].toString().toLowerCase();
+                        const value = userData.data[field].toString().toLowerCase();
+                        console.log(`✅ Tipo encontrado en data.${field}: ${value}`);
+                        return value;
                     }
                 }
             }
 
             // Buscar en propiedades relacionadas con empresa
-            const empresaFields = ['empresa', 'company', 'es_empresa', 'is_company', 'tipo_empresa'];
+            const empresaFields = ['empresa', 'company', 'es_empresa', 'is_company', 'tipo_empresa', 'esEmpresa', 'is_company'];
             for (let field of empresaFields) {
                 if (userData[field] !== undefined && userData[field] !== null) {
-                    if (userData[field] === true || userData[field] === 'true' || userData[field] === 'empresa') {
-                        console.log(`✅ Empresa detectada en campo: ${field}`);
+                    const value = userData[field];
+                    if (value === true || value === 'true' || value === 'empresa' || value === 'company' || value === 1 || value === '1') {
+                        console.log(`✅ Empresa detectada en campo: ${field} = ${value}`);
                         return 'empresa';
                     }
                 }
             }
 
-            console.log('❌ No se pudo detectar el tipo de usuario');
-            return null;
+            // Verificar si el nombre o email sugiere que es empresa
+            const nombreCompleto = userData.nombre_completo || userData.nombre || userData.nombres || '';
+            const email = userData.email || userData.correo || '';
+            
+            const empresaKeywords = ['s.a', 's.r.l', 'c.a', 'inc', 'ltda', 'sa', 'srl', 'cia', 'corp'];
+            for (const keyword of empresaKeywords) {
+                if (nombreCompleto.toLowerCase().includes(keyword) || email.toLowerCase().includes(keyword)) {
+                    console.log(`✅ Empresa detectada por keyword "${keyword}" en: ${nombreCompleto || email}`);
+                    return 'empresa';
+                }
+            }
+
+            console.log('ℹ️ Tipo de usuario no específico detectado, usando "talento_humano" por defecto');
+            return 'talento_humano';
         }
 
-        // FUNCIÓN NUEVA - Actualizar interfaz según el tipo de usuario
+        // FUNCIÓN: Actualizar interfaz según el tipo de usuario
         function updateInterfaceForUserType(userType) {
             const pageTitle = document.getElementById('pageTitle');
             const pageSubtitle = document.getElementById('pageSubtitle');
-            const publishButton = document.querySelector('.publish-btn');
-
-            if (userType === 'empresa' || userType === 'company') {
+            const publishButton = document.getElementById('publishButton');
+            const nombreLabel = document.querySelector('label[for="nombre"]');
+            const descripcionTextarea = document.getElementById('descripcion');
+            
+            console.log(`🔄 Actualizando interfaz para tipo de usuario: ${userType}`);
+            
+            if (userType === 'empresa' || userType === 'company' || userType === 'emprendedor' || userType === 'empresario') {
+                // Configurar para empresa
                 pageTitle.textContent = 'Publicar oferta de empresa';
                 pageSubtitle.textContent = 'Publica oportunidades laborales en tu empresa';
                 publishButton.textContent = 'Publicar Oferta';
                 
-                // Actualizar placeholders para empresa
-                document.getElementById('nombre').placeholder = 'Nombre de la empresa';
-                document.getElementById('descripcion').placeholder = 'Describe la oferta laboral, requisitos y beneficios...';
+                if (nombreLabel) {
+                    nombreLabel.textContent = 'Nombre de la empresa';
+                }
+                
+                if (descripcionTextarea) {
+                    descripcionTextarea.placeholder = 'Describe la oferta laboral, requisitos y beneficios...';
+                }
+                
+                // También actualizar el placeholder del input
+                const nombreInput = document.getElementById('nombre');
+                if (nombreInput) {
+                    nombreInput.placeholder = 'Ingresa el nombre de tu empresa';
+                }
                 
             } else {
-                // Por defecto, asumimos talento humano
+                // Configurar para talento humano (predeterminado)
                 pageTitle.textContent = 'Publicar talento humano';
                 pageSubtitle.textContent = 'Comparte tu talento con nuestra comunidad WORKLY';
                 publishButton.textContent = 'Publicar Talento';
+                
+                if (nombreLabel) {
+                    nombreLabel.textContent = 'Nombre';
+                }
+                
+                if (descripcionTextarea) {
+                    descripcionTextarea.placeholder = 'Describe tus habilidades, experiencia y servicios que ofreces...';
+                }
+                
+                // También actualizar el placeholder del input
+                const nombreInput = document.getElementById('nombre');
+                if (nombreInput) {
+                    nombreInput.placeholder = 'Ingresa tu Nombre completo';
+                }
             }
+            
+            console.log(`✅ Interfaz actualizada: ${pageTitle.textContent}`);
         }
 
-        // FUNCIÓN NUEVA - Mostrar badge con el tipo de usuario
+        // FUNCIÓN: Mostrar badge con el tipo de usuario
         function showUserTypeBadge(userType) {
             const badge = document.getElementById('userTypeBadge');
             
             let displayText = '';
             let backgroundColor = '';
             
-            if (userType === 'empresa' || userType === 'company') {
+            if (userType === 'empresa' || userType === 'company' || userType === 'emprendedor' || userType === 'empresario') {
                 displayText = '🏢 Empresa';
                 backgroundColor = '#e74c3c';
-            } else if (userType === 'talento_humano' || userType === 'talento' || userType === 'personal') {
+            } else if (userType === 'talento_humano' || userType === 'talento' || userType === 'personal' || userType === 'profesional') {
                 displayText = '👤 Talento Humano';
                 backgroundColor = '#3498db';
             } else {
-                displayText = `🔍 ${userType}`;
+                displayText = `🔍 ${userType.charAt(0).toUpperCase() + userType.slice(1)}`;
                 backgroundColor = '#9b59b6';
             }
             
@@ -594,64 +1218,31 @@
             badge.style.display = 'block';
         }
 
-        // FUNCIÓN MEJORADA - Extraer ID del usuario de múltiples formas posibles
-        function getUserId(userData) {
-            if (!userData) {
-                console.error('❌ No hay datos de usuario disponibles');
-                return null;
-            }
-
-            console.log('🔍 Buscando ID en datos del usuario:', userData);
-
-            // Buscar el ID en diferentes propiedades posibles
-            const possibleIdFields = [
-                'id_usuario', 'id', 'user_id', 'usuario_id', 'userId',
-                'idUsuario', 'ID', 'Id'
-            ];
-
-            for (let field of possibleIdFields) {
-                if (userData[field] !== undefined && userData[field] !== null) {
-                    console.log(`✅ ID encontrado en campo: ${field} = ${userData[field]}`);
-                    return userData[field];
-                }
-            }
-
-            // Si no se encuentra en las propiedades directas, buscar en objetos anidados
-            if (userData.data && typeof userData.data === 'object') {
-                for (let field of possibleIdFields) {
-                    if (userData.data[field] !== undefined && userData.data[field] !== null) {
-                        console.log(`✅ ID encontrado en data.${field} = ${userData.data[field]}`);
-                        return userData.data[field];
-                    }
-                }
-            }
-
-            console.error('❌ No se pudo encontrar el ID del usuario en ninguna propiedad conocida');
-            console.log('📋 Propiedades disponibles:', Object.keys(userData));
-            return null;
-        }
-
-        // Autocompletar formulario con datos del usuario
+        // FUNCIÓN: Autocompletar formulario con datos del usuario
         function autocompleteFormWithUserData(user) {
-            // Obtener y establecer ID del usuario
-            const userId = getUserId(user);
-            if (userId) {
-                document.getElementById('userId').value = userId;
-                console.log(`✅ ID del usuario establecido: ${userId}`);
+            // Nombre completo - CORREGIDO: Ahora se maneja según tipo de usuario
+            const userType = document.getElementById('userType').value;
+            
+            if (userType === 'empresa') {
+                // Para empresas, priorizar nombre de empresa
+                if (user && user.empresa) {
+                    document.getElementById('nombre').value = user.empresa;
+                } else if (user && user.nombre_completo) {
+                    document.getElementById('nombre').value = user.nombre_completo;
+                } else if (user && user.nombre) {
+                    document.getElementById('nombre').value = user.nombre;
+                }
             } else {
-                console.error('❌ No se pudo obtener el ID del usuario');
-                alert('Error: No se pudo obtener tu información de usuario. Por favor, contacta al soporte.');
-            }
-
-            // Nombre completo
-            if (user && user.nombre_completo) {
-                document.getElementById('nombre').value = user.nombre_completo;
-            } else if (user && user.nombre) {
-                document.getElementById('nombre').value = user.nombre;
-            } else if (user && user.nombres) {
-                document.getElementById('nombre').value = user.nombres;
-            } else if (user && user.empresa) {
-                document.getElementById('nombre').value = user.empresa;
+                // Para talento humano, priorizar nombre personal
+                if (user && user.nombre_completo) {
+                    document.getElementById('nombre').value = user.nombre_completo;
+                } else if (user && user.nombre) {
+                    document.getElementById('nombre').value = user.nombre;
+                } else if (user && user.nombres) {
+                    document.getElementById('nombre').value = user.nombres;
+                } else if (user && user.empresa) {
+                    document.getElementById('nombre').value = user.empresa;
+                }
             }
 
             // Contacto (teléfono)
@@ -685,48 +1276,27 @@
                 document.getElementById('descripcion').value = user.bio;
             }
 
-            // Experiencia (si está disponible en el perfil)
-            if (user && user.experiencia) {
-                document.getElementById('experiencia').value = user.experiencia;
-            } else if (user && user.anios_experiencia) {
-                document.getElementById('experiencia').value = user.anios_experiencia;
-            } else if (user && user.experience) {
-                document.getElementById('experiencia').value = user.experience;
-            }
+            // Establecer fecha actual como fecha de publicación por defecto
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('fecha_publicacion').value = today;
         }
 
-        // Mostrar/ocultar loading
-        function showLoading(show) {
-            const loadingOverlay = document.getElementById('loadingOverlay');
-            loadingOverlay.style.display = show ? 'flex' : 'none';
-        }
-
-        // Redirigir al login
-        function redirectToLogin() {
-            alert('Debes iniciar sesión para publicar tu talento');
-            window.location.href = "/login/";
-        }
-
-        // FUNCIÓN MEJORADA - Enviar formulario con detección de tipo de usuario
+        // FUNCIÓN CORREGIDA: Enviar formulario con verificación de límites
         async function submitTalentForm() {
             console.log('🎯 Iniciando publicación...');
             
-            // Obtener datos del usuario desde localStorage o variable global
-            const storedUserData = localStorage.getItem('user_data');
-            const userData = storedUserData ? JSON.parse(storedUserData) : window.userData;
+            // Verificar límites antes de proceder
+            const normalizedMembership = normalizeMembershipName(currentMembership);
+            const membershipLimit = MEMBERSHIP_LIMITS[normalizedMembership] || 0;
             
-            if (!userData) {
-                console.error('❌ No hay datos de usuario disponibles');
-                alert('Error: No se pudieron cargar tus datos. Por favor, recarga la página.');
+            if (currentPublicationsCount >= membershipLimit) {
+                alert(`❌ Has alcanzado el límite de publicaciones para tu membresía ${normalizedMembership.toUpperCase()} (${membershipLimit} publicaciones).\n\nPor favor, actualiza tu membresía para publicar más.`);
                 return;
             }
             
-            // Obtener ID del usuario usando la función mejorada
-            const userId = getUserId(userData);
-            
             if (!userId) {
-                console.error('❌ No se pudo obtener el ID del usuario');
-                alert('Error: No se pudo identificar tu usuario. Por favor, contacta al soporte.');
+                console.error('❌ No hay ID de usuario disponible');
+                alert('Error: No se pudo identificar tu usuario. Por favor, recarga la página.');
                 return;
             }
 
@@ -734,21 +1304,27 @@
             const userType = document.getElementById('userType').value;
             console.log(`👤 Tipo de usuario para publicación: ${userType}`);
             
+            // Obtener valor de membresía
+            const tipoMembresiaVinculada = document.getElementById('tipoMembresiaVinculada').value;
+            console.log(`🎫 Tipo de membresía para publicación: ${tipoMembresiaVinculada}`);
+            
             // Obtener valores del formulario
+            const titulo_publicidad = document.getElementById('titulo_publicidad').value;
             const nombre = document.getElementById('nombre').value;
             const id_categoria = document.getElementById('categoria').value;
-            const tipo_membresia = document.getElementById('membresia').value;
+            const horario_disponible = document.getElementById('horario_disponible').value;
+            const fecha_publicacion = document.getElementById('fecha_publicacion').value;
             const contacto = document.getElementById('contacto').value;
             const ubicacion = document.getElementById('ubicacion').value;
-            const experiencia = document.getElementById('experiencia').value;
             const descripcion_detallada = document.getElementById('descripcion').value;
             
             console.log('📋 Datos del formulario:', {
-                userId, userType, nombre, id_categoria, tipo_membresia, contacto, ubicacion, experiencia, descripcion_detallada
+                userId, userType, tipoMembresiaVinculada, titulo_publicidad, nombre, id_categoria, 
+                horario_disponible, fecha_publicacion, contacto, ubicacion, descripcion_detallada
             });
             
             // Validaciones
-            if (!nombre || !id_categoria || !contacto) {
+            if (!titulo_publicidad || !nombre || !id_categoria || !contacto) {
                 alert('❌ Por favor completa todos los campos obligatorios');
                 return;
             }
@@ -762,31 +1338,32 @@
             showLoading(true);
 
             try {
-                // Crear título según el tipo de usuario
-                let titulo = '';
-                if (userType === 'empresa') {
-                    titulo = `Oferta Empresa: ${nombre} - ${getCategoryName(id_categoria)}`;
-                } else {
-                    titulo = `Talento: ${nombre} - ${getCategoryName(id_categoria)}`;
-                }
-
-                // ESTRUCTURA EXACTA QUE ESPERA EL BACKEND
+                // ESTRUCTURA CORREGIDA - USANDO LOS CAMPOS QUE ESPERA EL BACKEND
                 const publicationData = {
-                    id_usuario: parseInt(userId),
-                    id_categoria: parseInt(id_categoria),
-                    titulo_publicidad: titulo,
+                    // CAMPOS CORREGIDOS - usando los nombres que espera el backend
+                    id_usuario: parseInt(userId), // IMPORTANTE: id_usuario sin _id
+                    id_categoria: parseInt(id_categoria), // IMPORTANTE: id_categoria sin _id
+                    titulo_publicidad: titulo_publicidad,
                     descripcion_detallada: descripcion_detallada || 'Sin descripción detallada',
-                    tipo_membresia_vinculada: tipo_membresia,
+                    tipo_membresia_vinculada: parseInt(tipoMembresiaVinculada), // IMPORTANTE: tipo_membresia_vinculada sin _id
                     estado_publicacion: 'activa',
-                    // Campos adicionales
-                    contacto: contacto,
                     ubicacion: ubicacion || 'No especificada',
-                    experiencia: experiencia ? parseInt(experiencia) : 0,
-                    // Agregar tipo de usuario al envío
-                    tipo_usuario: userType
                 };
 
-                console.log('📤 Enviando datos exactos:', publicationData);
+                console.log('📤 Enviando datos CORREGIDOS con campos del backend:', publicationData);
+                console.log(`🔍 ID de categoría enviado: ${id_categoria} (${parseInt(id_categoria)})`);
+                
+                // DEBUG: Mostrar información de la categoría seleccionada
+                const categoriaSeleccionada = categoriasData.find(cat => {
+                    const catId = cat.id_categoria || cat.id;
+                    return catId == id_categoria;
+                });
+                
+                if (categoriaSeleccionada) {
+                    console.log(`✅ Categoría encontrada: ${categoriaSeleccionada.nombre_categoria} (ID: ${categoriaSeleccionada.id_categoria || categoriaSeleccionada.id})`);
+                } else {
+                    console.log(`❌ Categoría NO encontrada en datos locales para ID: ${id_categoria}`);
+                }
 
                 const response = await fetch(`${BACKEND_URL}/api/publicidades/`, {
                     method: 'POST',
@@ -803,69 +1380,32 @@
                     const result = await response.json();
                     console.log('✅ Publicación exitosa:', result);
                     
+                    // Actualizar contador de publicaciones
+                    currentPublicationsCount++;
+                    updateMembershipStatus();
+                    
                     let successMessage = '';
+                    const categoriaNombre = getCategoryName(id_categoria);
+                    
                     if (userType === 'empresa') {
-                        successMessage = `🎉 ¡Oferta de empresa publicada exitosamente!\n\nEmpresa: ${nombre}\nCategoría: ${getCategoryName(id_categoria)}\nContacto: ${contacto}\nUbicación: ${ubicacion}`;
+                        successMessage = `🎉 ¡Oferta de empresa publicada exitosamente!\n\nTítulo: ${titulo_publicidad}\nEmpresa: ${nombre}\nCategoría: ${categoriaNombre}\nContacto: ${contacto}\nUbicación: ${ubicacion}`;
                     } else {
-                        successMessage = `🎉 ¡Talento publicado exitosamente!\n\nNombre: ${nombre}\nCategoría: ${getCategoryName(id_categoria)}\nContacto: ${contacto}\nUbicación: ${ubicacion}`;
+                        successMessage = `🎉 ¡Talento publicado exitosamente!\n\nTítulo: ${titulo_publicidad}\nNombre: ${nombre}\nCategoría: ${categoriaNombre}\nContacto: ${contacto}\nUbicación: ${ubicacion}`;
                     }
                     
                     alert(successMessage);
                     
                     // Limpiar solo algunos campos
+                    document.getElementById('titulo_publicidad').value = '';
                     document.getElementById('categoria').value = '';
+                    document.getElementById('horario_disponible').value = '';
                     document.getElementById('descripcion').value = '';
-                    document.getElementById('experiencia').value = '';
                     
                 } else {
                     const errorData = await response.json();
                     console.error('❌ Error del servidor:', errorData);
                     
-                    // Si hay error con tipo_membresia, probar diferentes valores
-                    if (errorData.tipo_membresia_vinculada) {
-                        console.log('🔄 Probando diferentes valores de membresía...');
-                        
-                        // Lista de valores posibles para probar
-                        const posiblesMembresias = ['1', '2', '3', 'basica', 'premium', 'empresa', 'gratuita', 'estandar', 'Básica', 'Premium', 'Empresa'];
-                        
-                        for (let membresia of posiblesMembresias) {
-                            console.log(`🔄 Probando membresía: ${membresia}`);
-                            
-                            const testData = {
-                                ...publicationData,
-                                tipo_membresia_vinculada: membresia
-                            };
-                            
-                            const testResponse = await fetch(`${BACKEND_URL}/api/publicidades/`, {
-                                method: 'POST',
-                                headers: {
-                                    'Authorization': `Bearer ${token}`,
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify(testData)
-                            });
-                            
-                            if (testResponse.ok) {
-                                const result = await testResponse.json();
-                                console.log(`✅ Publicación exitosa con membresía: ${membresia}`, result);
-                                
-                                let successMessage = userType === 'empresa' 
-                                    ? '🎉 ¡Oferta de empresa publicada exitosamente!' 
-                                    : '🎉 ¡Talento publicado exitosamente!';
-                                alert(successMessage);
-                                
-                                // Limpiar campos
-                                document.getElementById('categoria').value = '';
-                                document.getElementById('descripcion').value = '';
-                                document.getElementById('experiencia').value = '';
-                                return;
-                            }
-                        }
-                        
-                        throw new Error(`No se encontró un valor válido para tipo_membresia_vinculada. Valores probados: ${posiblesMembresias.join(', ')}`);
-                    } else {
-                        throw new Error(`Error ${response.status}: ${JSON.stringify(errorData)}`);
-                    }
+                    throw new Error(`Error ${response.status}: ${JSON.stringify(errorData)}`);
                 }
                 
             } catch (error) {
@@ -876,8 +1416,19 @@
             }
         }
 
-        // Obtener nombre legible de la categoría
+        // FUNCIÓN: Obtener nombre legible de la categoría
         function getCategoryName(categoryValue) {
+            // Buscar en las categorías cargadas
+            const categoria = categoriasData.find(cat => {
+                const catId = cat.id_categoria || cat.id;
+                return catId == categoryValue;
+            });
+            
+            if (categoria) {
+                return categoria.nombre_categoria || categoria.nombre || `Categoría #${categoryValue}`;
+            }
+            
+            // Si no se encuentra, usar un mapeo de emergencia
             const categoryMap = {
                 '1': 'Electricidad',
                 '2': 'Construcción',
@@ -894,7 +1445,24 @@
                 '13': 'Otros'
             };
             
-            return categoryMap[categoryValue] || 'Categoría desconocida';
+            return categoryMap[categoryValue] || `Categoría #${categoryValue}`;
+        }
+
+        // Función para ir a membresías
+        function goToMemberships() {
+            window.location.href = '/memberships/';
+        }
+
+        // Mostrar/ocultar loading
+        function showLoading(show) {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.style.display = show ? 'flex' : 'none';
+        }
+
+        // Redirigir al login
+        function redirectToLogin() {
+            alert('Debes iniciar sesión para publicar tu talento');
+            window.location.href = "/login/";
         }
 
         // Función para volver atrás
@@ -909,3 +1477,4 @@
     </script>
 </body>
 </html>
+[file content end]

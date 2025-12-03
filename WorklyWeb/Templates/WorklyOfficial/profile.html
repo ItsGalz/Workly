@@ -155,6 +155,54 @@
         .main-content {
             display: none; /* Ocultar hasta que se verifique el token */
         }
+        .publication-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #6c757d;
+        }
+        .meta-icon {
+            font-size: 1rem;
+        }
+        .membership-info {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid #3498db;
+        }
+        .membership-upgrade {
+            background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid #4caf50;
+        }
+        .debug-info {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        .debug-toggle {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -201,6 +249,15 @@
             
             <div class="row justify-content-center">
                 <div class="col-lg-10">
+                    <!-- Botón de depuración -->
+                    <button class="debug-toggle" onclick="toggleDebug()">🐛 Modo Depuración</button>
+                    
+                    <!-- Información de depuración -->
+                    <div id="debugInfo" class="debug-info" style="display: none;">
+                        <h6>🔍 Información de Depuración</h6>
+                        <div id="debugContent"></div>
+                    </div>
+
                     <div class="profile-card">
                         <div class="profile-header text-center">
                             <div class="profile-avatar">👤</div>
@@ -208,6 +265,27 @@
                             <p class="mb-0">Gestiona tu información personal y publicaciones</p>
                         </div>
                         <div class="p-4">
+                            <!-- Información de Membresía -->
+                            <div class="membership-info">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h5 class="mb-1">🎯 Estado de Membresía</h5>
+                                        <p class="mb-0" id="membershipStatusText">
+                                            <strong id="currentMembershipDisplay">Cargando...</strong>
+                                        </p>
+                                        <small class="text-muted" id="membershipBenefits">Beneficios incluidos: Cargando...</small>
+                                    </div>
+                                    <div class="col-md-4 text-end">
+                                        <button class="btn btn-workly btn-sm" onclick="goToMemberships()">
+                                            🔄 Actualizar Membresía
+                                        </button>
+                                        <button class="btn btn-outline-info btn-sm ms-2" onclick="forceReloadPublications()">
+                                            🔄 Recargar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Información del Usuario -->
                             <div class="row">
                                 <div class="col-md-6">
@@ -280,9 +358,12 @@
                             <div class="publications-section">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <h4 class="section-title mb-0">📝 Mis Publicaciones</h4>
-                                    <button class="btn btn-workly" onclick="goToCreatePublication()">
-                                        ➕ Nueva Publicación
-                                    </button>
+                                    <div>
+                                        <span class="badge bg-primary me-2" id="publicationsCount">0 publicaciones</span>
+                                        <button class="btn btn-workly" onclick="goToCreatePublication()">
+                                            ➕ Nueva Publicación
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <div id="publicationsContainer">
@@ -463,6 +544,7 @@
         let userPublications = [];
         let publicationToDelete = null;
         let publicationToEdit = null;
+        let currentUserId = null;
 
         // Modales de Bootstrap
         const successModal = new bootstrap.Modal(document.getElementById('successModal'));
@@ -474,7 +556,33 @@
             await checkAuthentication();
         });
 
-        // Verificar si el usuario está autenticado
+        // SOLUCIÓN DEFINITIVA: Obtener el ID del usuario desde el token JWT
+        function getUserIdFromToken(token) {
+            try {
+                // El token JWT tiene 3 partes separadas por puntos: header.payload.signature
+                const payload = token.split('.')[1];
+                // Decodificar base64
+                const decodedPayload = JSON.parse(atob(payload));
+                console.log('🔐 Payload del token JWT:', decodedPayload);
+                
+                // Buscar el ID del usuario en el payload del token
+                const possibleIdFields = ['user_id', 'sub', 'id', 'user_id', 'usuario_id', 'userId'];
+                for (let field of possibleIdFields) {
+                    if (decodedPayload[field]) {
+                        console.log(`✅ ID encontrado en token JWT (${field}):`, decodedPayload[field]);
+                        return decodedPayload[field];
+                    }
+                }
+                
+                console.warn('⚠️ No se pudo encontrar el ID en el token JWT');
+                return null;
+            } catch (error) {
+                console.error('❌ Error decodificando token JWT:', error);
+                return null;
+            }
+        }
+
+        // Verificar si el usuario está autenticado - VERSIÓN CORREGIDA
         async function checkAuthentication() {
             const token = localStorage.getItem('access_token');
             
@@ -484,6 +592,11 @@
             }
 
             try {
+                // PRIMERO: Intentar obtener el ID del token JWT
+                currentUserId = getUserIdFromToken(token);
+                console.log('👤 ID del usuario desde token:', currentUserId);
+
+                // SEGUNDO: Obtener los datos del perfil del usuario
                 const response = await Promise.race([
                     fetch(`${BACKEND_URL}/auth/user-profile/`, {
                         method: 'GET',
@@ -504,6 +617,39 @@
                 const responseData = await response.json();
                 const userData = responseData.data || responseData;
                 
+                console.log('📋 Datos del perfil recibidos:', userData);
+                
+                // Si no tenemos el ID del token, intentar obtenerlo de otra manera
+                if (!currentUserId) {
+                    console.log('🔍 Intentando obtener ID desde otros endpoints...');
+                    
+                    // Intentar con un endpoint que devuelva el ID
+                    try {
+                        const meResponse = await fetch(`${BACKEND_URL}/auth/me/`, {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+                        
+                        if (meResponse.ok) {
+                            const meData = await meResponse.json();
+                            console.log('📋 Datos de /auth/me/:', meData);
+                            currentUserId = meData.id || meData.user_id || meData.usuario_id;
+                        }
+                    } catch (error) {
+                        console.log('❌ Endpoint /auth/me/ no disponible');
+                    }
+                }
+
+                // SOLUCIÓN ALTERNATIVA: Buscar por email en las publicaciones
+                if (!currentUserId) {
+                    console.log('🔍 Usando solución alternativa: buscar por email');
+                    // Guardaremos el email para usarlo en el filtrado
+                    localStorage.setItem('user_email', userData.correo_electronico);
+                }
+
                 localStorage.setItem('user_data', JSON.stringify(userData));
                 originalUserData = {...userData};
                 
@@ -532,15 +678,23 @@
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
             localStorage.removeItem('user_data');
+            localStorage.removeItem('user_email');
+            localStorage.removeItem('current_membership');
             window.location.href = "/login/";
         }
 
-        // Cargar publicaciones del usuario
+        // Cargar publicaciones del usuario - VERSIÓN DEFINITIVA
         async function loadUserPublications() {
             const token = localStorage.getItem('access_token');
-            if (!token) return;
+            if (!token) {
+                console.error('❌ No hay token de autenticación');
+                return;
+            }
 
             try {
+                console.log('🔄 Cargando publicaciones...');
+                console.log('👤 ID del usuario actual:', currentUserId);
+                
                 const response = await fetch(`${BACKEND_URL}/api/publicidades/`, {
                     method: 'GET',
                     headers: {
@@ -548,6 +702,8 @@
                         'Content-Type': 'application/json'
                     }
                 });
+
+                console.log('📡 Respuesta del servidor:', response.status, response.statusText);
 
                 if (response.ok) {
                     const data = await response.json();
@@ -564,23 +720,81 @@
                         allPublications = [];
                     }
                     
-                    // Obtener el ID del usuario actual
-                    const userData = JSON.parse(localStorage.getItem('user_data'));
-                    const userId = userData?.id_usuario;
+                    console.log('📋 Total de publicaciones obtenidas:', allPublications.length);
                     
-                    // Filtrar publicaciones para mostrar solo las del usuario actual
-                    userPublications = allPublications.filter(publication => {
-                        const publicationUserId = publication.id_usuario;
-                        return publicationUserId == userId;
-                    });
+                    // ESTRATEGIA DE FILTRADO MEJORADA
+                    if (currentUserId) {
+                        // FILTRADO POR ID (MÉTODO IDEAL)
+                        userPublications = allPublications.filter(publication => {
+                            const publicationUserId = publication.id_usuario || publication.usuario || publication.user_id;
+                            const matches = publicationUserId == currentUserId;
+                            console.log(`📝 ${publication.titulo_publicidad} | ID: ${publicationUserId} | Coincide: ${matches}`);
+                            return matches;
+                        });
+                        console.log('✅ Publicaciones filtradas por ID:', userPublications.length);
+                    } else {
+                        // FILTRADO POR EMAIL (MÉTODO ALTERNATIVO)
+                        const userEmail = localStorage.getItem('user_email');
+                        console.log('🔍 Filtrando por email:', userEmail);
+                        
+                        if (userEmail) {
+                            userPublications = allPublications.filter(publication => {
+                                // Buscar publicaciones que tengan el email del usuario en algún campo
+                                const publicationEmail = publication.correo_electronico || publication.email || publication.contacto;
+                                const matches = publicationEmail && publicationEmail.toLowerCase().includes(userEmail.toLowerCase());
+                                console.log(`📝 ${publication.titulo_publicidad} | Email: ${publicationEmail} | Coincide: ${matches}`);
+                                return matches;
+                            });
+                            console.log('✅ Publicaciones filtradas por email:', userPublications.length);
+                        } else {
+                            // ÚLTIMO RECURSO: Mostrar todas y dejar que el usuario identifique las suyas
+                            console.warn('⚠️ No se pudo filtrar, mostrando todas las publicaciones');
+                            userPublications = allPublications;
+                        }
+                    }
+                    
+                    // Actualizar contador
+                    document.getElementById('publicationsCount').textContent = `${userPublications.length} publicación${userPublications.length !== 1 ? 'es' : ''}`;
                     
                     renderUserPublications();
+                    
                 } else {
+                    console.error('❌ Error al cargar publicaciones:', response.status);
                     showNoPublications();
                 }
             } catch (error) {
+                console.error('💥 Error cargando publicaciones:', error);
                 showNoPublications();
             }
+        }
+
+        // Actualizar información de depuración
+        function updateDebugInfo() {
+            const debugContent = document.getElementById('debugContent');
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+            
+            let debugHTML = `
+                <p><strong>ID Usuario Actual:</strong> ${currentUserId || 'No disponible'}</p>
+                <p><strong>Email Usuario:</strong> ${localStorage.getItem('user_email') || 'No disponible'}</p>
+                <p><strong>Membresía Actual:</strong> ${localStorage.getItem('current_membership') || 'No disponible'}</p>
+                <p><strong>Total Publicaciones:</strong> ${userPublications.length}</p>
+                <p><strong>User Data:</strong></p>
+                <pre>${JSON.stringify(userData, null, 2)}</pre>
+                <p><strong>Publicaciones del Usuario:</strong></p>
+            `;
+            
+            userPublications.forEach((pub, index) => {
+                const publicationUserId = pub.id_usuario || pub.usuario || pub.user_id;
+                debugHTML += `
+                    <div style="border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 5px; background: #d4edda">
+                        <p><strong>Publicación ${index + 1}:</strong> ${pub.titulo_publicidad}</p>
+                        <p><strong>ID Usuario Pub:</strong> ${publicationUserId}</p>
+                        <p><strong>Estado:</strong> ${pub.estado_publicacion}</p>
+                    </div>
+                `;
+            });
+            
+            debugContent.innerHTML = debugHTML;
         }
 
         // Renderizar publicaciones del usuario
@@ -599,40 +813,72 @@
                 const statusText = getStatusText(publication.estado_publicacion);
                 const fecha = formatDate(publication.fecha_publicacion);
                 const publicationId = publication.id_publicidad || publication.id;
+                const precio = publication.precio ? `$${parseFloat(publication.precio).toLocaleString()}` : 'No especificado';
+                const experiencia = publication.experiencia ? `${publication.experiencia} año${publication.experiencia > 1 ? 's' : ''}` : 'No especificada';
                 
                 publicationsHTML += `
                     <div class="publication-card" id="publication-${publicationId}">
                         <div class="publication-header">
                             <div class="flex-grow-1">
-                                <div class="publication-title">${publication.titulo_publicidad}</div>
+                                <div class="publication-title">${publication.titulo_publicidad || 'Sin título'}</div>
                                 <div class="text-muted small">Publicado el: ${fecha}</div>
                             </div>
                             <span class="publication-status ${statusClass}">${statusText}</span>
                         </div>
                         
-                        <p class="text-muted mb-2">${publication.descripcion_detallada}</p>
+                        <p class="text-muted mb-2">${publication.descripcion_detallada || 'Sin descripción'}</p>
                         
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="text-muted small">
-                                <strong>Ubicación:</strong> ${publication.ubicacion || 'No especificada'} |
-                                <strong>Categoría:</strong> ${getCategoryName(publication.id_categoria)} |
-                                <strong>Membresía:</strong> ${getMembershipName(publication.tipo_membresia_vinculada)} |
-                                ${publication.precio ? `<strong>Precio:</strong> $${publication.precio}` : ''}
+                        <div class="publication-meta">
+                            <div class="meta-item">
+                                <span class="meta-icon">📍</span>
+                                <strong>Ubicación:</strong> ${publication.ubicacion || 'No especificada'}
                             </div>
-                            <div class="publication-actions">
-                                <button class="btn btn-outline-primary btn-sm" onclick="openEditPublicationModal(${publicationId})">
-                                    ✏️ Editar
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" onclick="confirmDeletePublication(${publicationId}, '${publication.titulo_publicidad}')">
-                                    🗑️ Eliminar
-                                </button>
+                            <div class="meta-item">
+                                <span class="meta-icon">🏷️</span>
+                                <strong>Categoría:</strong> ${getCategoryName(publication.id_categoria)}
                             </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">⭐</span>
+                                <strong>Membresía:</strong> ${getMembershipName(publication.tipo_membresia_vinculada)}
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">💰</span>
+                                <strong>Precio:</strong> ${precio}
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-icon">📅</span>
+                                <strong>Experiencia:</strong> ${experiencia}
+                            </div>
+                        </div>
+                        
+                        <div class="publication-actions">
+                            <button class="btn btn-outline-primary btn-sm" onclick="openEditPublicationModal(${publicationId})">
+                                ✏️ Editar
+                            </button>
+                            <button class="btn btn-outline-danger btn-sm" onclick="confirmDeletePublication(${publicationId}, '${publication.titulo_publicidad}')">
+                                🗑️ Eliminar
+                            </button>
                         </div>
                     </div>
                 `;
             });
 
             container.innerHTML = publicationsHTML;
+        }
+
+        // Forzar recarga de publicaciones
+        async function forceReloadPublications() {
+            console.log('🔄 Forzando recarga de publicaciones...');
+            await loadUserPublications();
+        }
+
+        // Alternar modo depuración
+        function toggleDebug() {
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
+            if (debugInfo.style.display === 'block') {
+                updateDebugInfo();
+            }
         }
 
         // Abrir modal de edición de publicación
@@ -656,7 +902,7 @@
             document.getElementById('editPubLocation').value = publication.ubicacion || '';
             document.getElementById('editPubCategory').value = publication.id_categoria || '';
             
-            // CORREGIDO: Convertir el valor de membresía a número
+            // Convertir el valor de membresía
             const membershipValue = publication.tipo_membresia_vinculada;
             document.getElementById('editPubMembership').value = typeof membershipValue === 'string' ? 
                 convertMembershipStringToNumber(membershipValue) : membershipValue;
@@ -683,7 +929,7 @@
             return membershipMap[membershipString] || '1';
         }
 
-        // Guardar cambios de publicación - VERSIÓN CORREGIDA
+        // Guardar cambios de publicación
         async function savePublicationChanges() {
             if (!publicationToEdit) return;
 
@@ -715,27 +961,16 @@
                 return;
             }
 
-            if (!id_categoria) {
-                alert('❌ La categoría es obligatoria');
-                return;
-            }
-
-            if (!tipo_membresia_vinculada) {
-                alert('❌ El tipo de membresía es obligatorio');
-                return;
-            }
-
             try {
                 const publicationId = publicationToEdit.id_publicidad || publicationToEdit.id;
                 
-                // CORREGIDO: Asegurar que tipo_membresia_vinculada sea un número
                 const updatedPublication = {
                     titulo_publicidad: titulo_publicidad,
                     descripcion_detallada: descripcion_detallada,
                     estado_publicacion: estado_publicacion,
                     ubicacion: ubicacion,
                     id_categoria: parseInt(id_categoria),
-                    tipo_membresia_vinculada: parseInt(tipo_membresia_vinculada), // CONVERTIR A NÚMERO
+                    tipo_membresia_vinculada: parseInt(tipo_membresia_vinculada),
                     contacto: contacto,
                     experiencia: experiencia ? parseInt(experiencia) : 0
                 };
@@ -744,8 +979,6 @@
                 if (precio && precio !== '') {
                     updatedPublication.precio = parseFloat(precio);
                 }
-
-                console.log('📤 Enviando datos de actualización:', updatedPublication);
 
                 const response = await fetch(`${BACKEND_URL}/api/publicidades/${publicationId}/`, {
                     method: 'PUT',
@@ -757,7 +990,6 @@
                 });
 
                 if (response.ok) {
-                    // Actualizar la publicación localmente
                     const updatedPub = await response.json();
                     
                     // Actualizar en el array local
@@ -770,39 +1002,17 @@
                         userPublications[index] = {...userPublications[index], ...updatedPub};
                     }
                     
-                    // Recargar la vista
                     renderUserPublications();
-                    
-                    // Cerrar modal y mostrar éxito
                     editPublicationModal.hide();
                     document.getElementById('successMessage').textContent = 'Publicación actualizada correctamente.';
                     successModal.show();
                     
                 } else {
                     const errorData = await response.json();
-                    console.error('❌ Error del servidor:', errorData);
-                    
-                    let errorMessage = 'Error al guardar los cambios';
-                    
-                    if (errorData.detail) {
-                        errorMessage = errorData.detail;
-                    } else if (errorData.error) {
-                        errorMessage = errorData.error;
-                    } else if (errorData.message) {
-                        errorMessage = errorData.message;
-                    } else if (typeof errorData === 'object') {
-                        // Mostrar todos los errores de validación
-                        const validationErrors = Object.entries(errorData)
-                            .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
-                            .join('\n');
-                        errorMessage = `Errores de validación:\n${validationErrors}`;
-                    }
-                    
-                    throw new Error(errorMessage);
+                    alert('❌ Error al guardar los cambios:\n' + (errorData.detail || errorData.error || 'Error desconocido'));
                 }
                 
             } catch (error) {
-                console.error('💥 Error completo:', error);
                 alert('❌ Error al guardar los cambios:\n' + error.message);
             }
         }
@@ -810,19 +1020,19 @@
         // Obtener nombre legible de la categoría
         function getCategoryName(categoryValue) {
             const categoryMap = {
-                '1': 'Electricidad',
-                '2': 'Construcción',
-                '3': 'Plomería',
-                '4': 'Carpintería',
-                '5': 'Refrigeración / Aire Acondicionado',
-                '6': 'Mecánica automotriz',
-                '7': 'Turismo / Guías / Hotelería',
-                '8': 'Limpieza',
-                '9': 'Repostería',
-                '10': 'Tutorías / Educación',
-                '11': 'Cuidado infantil / Adultos mayores',
-                '12': 'Belleza',
-                '13': 'Otros'
+                '1': '⚡ Electricidad',
+                '2': '🧱 Construcción',
+                '3': '🔧 Plomería',
+                '4': '🛠️ Carpintería',
+                '5': '❄️ Refrigeración / Aire Acondicionado',
+                '6': '🚗 Mecánica automotriz',
+                '7': '🧳 Turismo / Guías / Hotelería',
+                '8': '🏡 Limpieza',
+                '9': '🎂 Repostería',
+                '10': '🎓 Tutorías / Educación',
+                '11': '👶 Cuidado infantil / Adultos mayores',
+                '12': '💇 Belleza',
+                '13': '🔮 Otros'
             };
             
             return categoryMap[categoryValue] || 'Categoría desconocida';
@@ -853,6 +1063,11 @@
                     <button class="btn btn-workly mt-2" onclick="goToCreatePublication()">
                         ➕ Crear Primera Publicación
                     </button>
+                    <div class="mt-3">
+                        <button class="btn btn-outline-info btn-sm" onclick="toggleDebug()">
+                            🐛 Ver información de depuración
+                        </button>
+                    </div>
                 </div>
             `;
         }
@@ -920,7 +1135,13 @@
                 });
 
                 if (response.ok) {
-                    await loadUserPublications();
+                    userPublications = userPublications.filter(pub => {
+                        const pubId = pub.id_publicidad || pub.id;
+                        return pubId != publicationToDelete;
+                    });
+                    
+                    document.getElementById('publicationsCount').textContent = `${userPublications.length} publicación${userPublications.length !== 1 ? 'es' : ''}`;
+                    renderUserPublications();
                     deleteModal.hide();
                     document.getElementById('successMessage').textContent = 'Publicación eliminada correctamente.';
                     successModal.show();
@@ -936,7 +1157,7 @@
         document.getElementById('confirmDeleteBtn').addEventListener('click', deletePublication);
         document.getElementById('savePublicationBtn').addEventListener('click', savePublicationChanges);
 
-        // Mostrar datos del perfil del usuario - MEJORADA
+        // Mostrar datos del perfil del usuario - MEJORADA CON MEMBRESÍA
         function displayUserProfile(user) {
             if (!user) {
                 console.error('No hay datos de usuario');
@@ -974,6 +1195,47 @@
             const description = user.descripcion_perfil || user.descripcion || user.bio || '';
             document.getElementById('userDescription').textContent = description || 'No hay descripción disponible';
             document.getElementById('editDescription').value = description;
+
+            // ACTUALIZAR INFORMACIÓN DE MEMBRESÍA
+            updateMembershipDisplay();
+        }
+
+        // ACTUALIZAR INFORMACIÓN DE MEMBRESÍA - NUEVA FUNCIÓN
+        function updateMembershipDisplay() {
+            // Obtener membresía desde localStorage (actualizada desde la compra)
+            const currentMembership = localStorage.getItem('current_membership') || 'Visitante';
+            
+            console.log('🔄 Actualizando membresía en perfil:', currentMembership);
+            
+            // Actualizar badge en navbar
+            updateMembershipBadge(currentMembership);
+            
+            // Actualizar sección de membresía en el perfil
+            document.getElementById('currentMembershipDisplay').textContent = currentMembership;
+            
+            // Mostrar beneficios según la membresía
+            let benefitsText = '';
+            switch(currentMembership.toLowerCase()) {
+                case 'básica':
+                case 'basica':
+                    benefitsText = 'Perfil visible, 3 publicaciones activas, búsqueda básica';
+                    break;
+                case 'premium':
+                    benefitsText = 'Perfil destacado, publicaciones ilimitadas, búsqueda avanzada, soporte prioritario';
+                    break;
+                case 'empresa':
+                    benefitsText = 'Perfil empresarial, publicaciones ilimitadas, analytics avanzados, soporte dedicado';
+                    break;
+                default:
+                    benefitsText = 'Perfil básico, acceso limitado a funciones';
+            }
+            
+            document.getElementById('membershipBenefits').textContent = `Beneficios incluidos: ${benefitsText}`;
+            
+            // Actualizar también en user_data de localStorage para consistencia
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+            userData.membresia = currentMembership;
+            localStorage.setItem('user_data', JSON.stringify(userData));
         }
 
         // Alternar modo de edición
@@ -1007,20 +1269,11 @@
             }
         }
 
-        // Guardar perfil - VERSIÓN CORREGIDA
+        // Guardar perfil
         async function saveProfile() {
             const token = localStorage.getItem('access_token');
             if (!token) {
                 alert('Error: No estás autenticado');
-                return;
-            }
-
-            // Obtener el usuario actual para saber su ID
-            const userData = JSON.parse(localStorage.getItem('user_data'));
-            const userId = userData?.id_usuario || userData?.id;
-
-            if (!userId) {
-                alert('Error: No se pudo identificar el usuario');
                 return;
             }
 
@@ -1032,7 +1285,6 @@
                 descripcion_perfil: document.getElementById('editDescription').value.trim()
             };
 
-            // Validaciones básicas
             if (!updatedData.nombre_completo) {
                 alert('❌ El nombre completo es obligatorio');
                 return;
@@ -1043,149 +1295,37 @@
                 return;
             }
 
-            console.log('📤 Enviando datos de actualización:', updatedData);
-
             try {
-                // Intentar diferentes endpoints en orden
-                let response;
-                let success = false;
+                const response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedData)
+                });
 
-                // PRIMER INTENTO: Endpoint específico del usuario por ID
-                try {
-                    response = await fetch(`${BACKEND_URL}/usuarios/${userId}/`, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `Bearer ${token}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(updatedData)
-                    });
-                    
-                    if (response.ok) {
-                        success = true;
-                    }
-                } catch (error) {
-                    console.log('Primer endpoint falló, intentando siguiente...');
-                }
-
-                // SEGUNDO INTENTO: Endpoint PATCH
-                if (!success) {
-                    try {
-                        response = await fetch(`${BACKEND_URL}/usuarios/${userId}/`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(updatedData)
-                        });
-                        
-                        if (response.ok) {
-                            success = true;
-                        }
-                    } catch (error) {
-                        console.log('Segundo endpoint falló, intentando siguiente...');
-                    }
-                }
-
-                // TERCER INTENTO: Endpoint de perfil de usuario
-                if (!success) {
-                    try {
-                        response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
-                            method: 'PUT',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(updatedData)
-                        });
-                        
-                        if (response.ok) {
-                            success = true;
-                        }
-                    } catch (error) {
-                        console.log('Tercer endpoint falló, intentando siguiente...');
-                    }
-                }
-
-                // CUARTO INTENTO: Endpoint alternativo de perfil
-                if (!success) {
-                    try {
-                        response = await fetch(`${BACKEND_URL}/auth/user-profile/`, {
-                            method: 'PATCH',
-                            headers: {
-                                'Authorization': `Bearer ${token}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(updatedData)
-                        });
-                        
-                        if (response.ok) {
-                            success = true;
-                        }
-                    } catch (error) {
-                        console.log('Cuarto endpoint falló...');
-                    }
-                }
-
-                if (success) {
+                if (response.ok) {
                     const responseData = await response.json();
                     const updatedUserData = responseData.data || responseData;
                     
-                    // Actualizar datos en localStorage
                     localStorage.setItem('user_data', JSON.stringify(updatedUserData));
                     originalUserData = {...updatedUserData};
                     
-                    // Mostrar mensaje de éxito
                     document.getElementById('successMessage').textContent = '✅ Tu perfil se ha actualizado correctamente.';
                     successModal.show();
                     
-                    // Actualizar la UI
                     cancelEdit();
                     displayUserProfile(updatedUserData);
                     showAuthenticatedUI();
                     
-                    // Recargar publicaciones para asegurar consistencia
-                    await loadUserPublications();
-                    
                 } else {
-                    // Si todos los endpoints fallaron, mostrar error detallado
-                    let errorMessage = 'Error al guardar los cambios';
-                    
-                    if (response) {
-                        const errorData = await response.json().catch(() => ({}));
-                        console.error('❌ Error del servidor:', errorData);
-                        
-                        if (errorData.detail) {
-                            errorMessage = errorData.detail;
-                        } else if (errorData.error) {
-                            errorMessage = errorData.error;
-                        } else if (errorData.message) {
-                            errorMessage = errorData.message;
-                        } else if (typeof errorData === 'object') {
-                            // Mostrar errores de validación específicos
-                            const validationErrors = Object.entries(errorData)
-                                .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`)
-                                .join('\n');
-                            errorMessage = `Errores de validación:\n${validationErrors}`;
-                        }
-                    }
-                    
-                    throw new Error(errorMessage);
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || errorData.error || 'Error al guardar los cambios');
                 }
                 
             } catch (error) {
-                console.error('💥 Error completo al guardar perfil:', error);
-                
-                if (error.message.includes('tipo_usuario') || error.message.includes('tipo de usuario')) {
-                    alert('❌ No se puede cambiar el tipo de usuario. Esta opción puede estar restringida.');
-                } else if (error.message.includes('correo') || error.message.includes('email')) {
-                    alert('❌ Error con el correo electrónico: ' + error.message);
-                } else if (error.message.includes('Failed to fetch')) {
-                    alert('❌ Error de conexión: No se pudo conectar con el servidor. Verifica tu conexión a internet.');
-                } else {
-                    alert('❌ Error al guardar los cambios:\n' + error.message);
-                }
+                alert('❌ Error al guardar los cambios:\n' + error.message);
             }
         }
 
@@ -1193,20 +1333,20 @@
         function showAuthenticatedUI() {
             const userData = localStorage.getItem('user_data');
             let userName = 'Usuario';
-            let membership = 'Visitante';
             
             if (userData) {
                 try {
                     const user = JSON.parse(userData);
                     userName = user.nombre_completo || user.correo_electronico || 'Usuario';
-                    membership = user.membresia || localStorage.getItem('user_membership') || 'Visitante';
                 } catch (e) {
                     console.error('Error parsing user data:', e);
                 }
             }
             
             document.getElementById('userName').textContent = userName;
-            updateMembershipBadge(membership);
+            
+            // ACTUALIZAR MEMBRESÍA DESDE LOCALSTORAGE
+            updateMembershipDisplay();
             
             document.getElementById('authButtons').style.display = 'none';
             document.getElementById('userMenu').style.display = 'flex';
@@ -1221,6 +1361,7 @@
             
             switch(membership.toLowerCase()) {
                 case 'básica':
+                case 'basica':
                     badge.classList.add('membership-basic');
                     break;
                 case 'premium':
@@ -1250,9 +1391,13 @@
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
             localStorage.removeItem('user_data');
-            localStorage.removeItem('user_membership');
+            localStorage.removeItem('current_membership');
+            localStorage.removeItem('user_email');
             window.location.href = "/logout/";
         }
+
+        // Verificar actualizaciones de membresía periódicamente
+        setInterval(updateMembershipDisplay, 2000);
     </script>
 </body>
 </html>

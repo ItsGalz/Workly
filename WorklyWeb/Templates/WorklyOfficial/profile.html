@@ -185,24 +185,6 @@
             margin: 1rem 0;
             border-left: 4px solid #4caf50;
         }
-        .debug-info {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }
-        .debug-toggle {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            margin-bottom: 1rem;
-        }
     </style>
 </head>
 <body>
@@ -249,14 +231,6 @@
             
             <div class="row justify-content-center">
                 <div class="col-lg-10">
-                    <!-- Botón de depuración -->
-                    <button class="debug-toggle" onclick="toggleDebug()">🐛 Modo Depuración</button>
-                    
-                    <!-- Información de depuración -->
-                    <div id="debugInfo" class="debug-info" style="display: none;">
-                        <h6>🔍 Información de Depuración</h6>
-                        <div id="debugContent"></div>
-                    </div>
 
                     <div class="profile-card">
                         <div class="profile-header text-center">
@@ -420,121 +394,89 @@
         </div>
 
         <!-- Modal de edición de publicación -->
-        <div class="modal fade" id="editPublicationModal" tabindex="-1">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title">✏️ Editar Publicación</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="editPublicationForm">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Título de la publicación</label>
-                                        <input type="text" class="form-control" id="editPubTitle" required>
-                                    </div>
+        <!-- Modal de edición de publicación -->
+            <div class="modal fade" id="editPublicationModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">✏️ Editar Publicación</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="editPublicationForm">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Título de la publicación</label>
+                                    <input type="text" class="form-control" id="editPubTitle" required>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Estado</label>
-                                        <select class="form-control" id="editPubStatus">
-                                            <option value="activa">Activa</option>
-                                            <option value="pausada">Pausada</option>
-                                            <option value="inactiva">Inactiva</option>
-                                        </select>
-                                    </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Estado</label>
+                                    <select class="form-control" id="editPubStatus">
+                                        <option value="activa">Activa</option>
+                                        <option value="pausada">Pausada</option>
+                                        <option value="eliminada">Eliminada</option>
+                                    </select>
                                 </div>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">Categoría</label>
-                                <select class="form-control" id="editPubCategory">
-                                    <option value="" disabled selected>Selecciona una categoría</option>
-                                    <option value="1">⚡ Electricidad</option>
-                                    <option value="2">🧱 Construcción</option>
-                                    <option value="3">🔧 Plomería</option>
-                                    <option value="4">🛠️ Carpintería</option>
-                                    <option value="5">❄️ Refrigeración / Aire Acondicionado</option>
-                                    <option value="6">🚗 Mecánica automotriz</option>
-                                    <option value="7">🧳 Turismo / Guías / Hotelería</option>
-                                    <option value="8">🏡 Limpieza</option>
-                                    <option value="9">🎂 Repostería</option>
-                                    <option value="10">🎓 Tutorías / Educación</option>
-                                    <option value="11">👶 Cuidado infantil / Adultos mayores</option>
-                                    <option value="12">💇 Belleza</option>
-                                    <option value="13">🔮 Otros</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Tipo de Membresía</label>
-                                <select class="form-control" id="editPubMembership">
-                                    <option value="1">1 - Básica</option>
-                                    <option value="2">2 - Premium</option>
-                                    <option value="3">3 - Empresa</option>
-                                </select>
-                            </div>
-                            
-                            <div class="mb-3">
-                                <label class="form-label">Descripción detallada</label>
-                                <textarea class="form-control" id="editPubDescription" rows="4" required></textarea>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Ubicación</label>
-                                        <input type="text" class="form-control" id="editPubLocation">
-                                    </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Categoría</label>
+                                    <select class="form-control" id="editPubCategory">
+                                        <option value="" disabled selected>Selecciona una categoría</option>
+                                        <option value="1">⚡ Electricidad</option>
+                                        <option value="2">🧱 Construcción</option>
+                                        <option value="3">🔧 Plomería</option>
+                                        <option value="4">🛠️ Carpintería</option>
+                                        <option value="5">❄️ Refrigeración / Aire Acondicionado</option>
+                                        <option value="6">🚗 Mecánica automotriz</option>
+                                        <option value="7">🧳 Turismo / Guías / Hotelería</option>
+                                        <option value="8">🏡 Limpieza</option>
+                                        <option value="9">🎂 Repostería</option>
+                                        <option value="10">🎓 Tutorías / Educación</option>
+                                        <option value="11">👶 Cuidado infantil / Adultos mayores</option>
+                                        <option value="12">💇 Belleza</option>
+                                        <option value="13">🔮 Otros</option>
+                                    </select>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Contacto</label>
-                                        <input type="text" class="form-control" id="editPubContact">
-                                    </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Descripción detallada</label>
+                                    <textarea class="form-control" id="editPubDescription" rows="4" required></textarea>
                                 </div>
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Precio (opcional)</label>
-                                        <input type="number" class="form-control" id="editPubPrice" step="0.01">
-                                    </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Ubicación</label>
+                                    <input type="text" class="form-control" id="editPubLocation">
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label class="form-label">Años de experiencia</label>
-                                        <input type="number" class="form-control" id="editPubExperience">
-                                    </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Contacto</label>
+                                    <input type="text" class="form-control" id="editPubContact" readonly style="background-color: #e9ecef;">
+                                    <small class="text-muted">Este contacto es el registrado en tu perfil</small>
                                 </div>
-                            </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" id="savePublicationBtn">💾 Guardar Cambios</button>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="button" class="btn btn-primary" id="savePublicationBtn">💾 Guardar Cambios</button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <footer class="bg-dark text-white py-4 mt-5">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5>🚀 WORKLY</h5>
-                        <p class="text-muted">Tu plataforma de confianza para servicios profesionales</p>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <p class="text-muted">&copy; 2024 WORKLY. Todos los derechos reservados.</p>
-                    </div>
+                    <footer class="bg-dark text-white py-4 mt-5">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>🚀 WORKLY</h5>
+                                    <p class="text-muted">Tu plataforma de confianza para servicios profesionales</p>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <p class="text-muted">&copy; 2024 WORKLY. Todos los derechos reservados.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </footer>
                 </div>
-            </div>
-        </footer>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -768,117 +710,66 @@
             }
         }
 
-        // Actualizar información de depuración
-        function updateDebugInfo() {
-            const debugContent = document.getElementById('debugContent');
-            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
-            
-            let debugHTML = `
-                <p><strong>ID Usuario Actual:</strong> ${currentUserId || 'No disponible'}</p>
-                <p><strong>Email Usuario:</strong> ${localStorage.getItem('user_email') || 'No disponible'}</p>
-                <p><strong>Membresía Actual:</strong> ${localStorage.getItem('current_membership') || 'No disponible'}</p>
-                <p><strong>Total Publicaciones:</strong> ${userPublications.length}</p>
-                <p><strong>User Data:</strong></p>
-                <pre>${JSON.stringify(userData, null, 2)}</pre>
-                <p><strong>Publicaciones del Usuario:</strong></p>
-            `;
-            
-            userPublications.forEach((pub, index) => {
-                const publicationUserId = pub.id_usuario || pub.usuario || pub.user_id;
-                debugHTML += `
-                    <div style="border: 1px solid #ccc; padding: 10px; margin: 5px 0; border-radius: 5px; background: #d4edda">
-                        <p><strong>Publicación ${index + 1}:</strong> ${pub.titulo_publicidad}</p>
-                        <p><strong>ID Usuario Pub:</strong> ${publicationUserId}</p>
-                        <p><strong>Estado:</strong> ${pub.estado_publicacion}</p>
-                    </div>
-                `;
-            });
-            
-            debugContent.innerHTML = debugHTML;
-        }
-
         // Renderizar publicaciones del usuario
-        function renderUserPublications() {
-            const container = document.getElementById('publicationsContainer');
-            
-            if (!userPublications || userPublications.length === 0) {
-                showNoPublications();
-                return;
-            }
 
-            let publicationsHTML = '';
-            
-            userPublications.forEach(publication => {
-                const statusClass = getStatusClass(publication.estado_publicacion);
-                const statusText = getStatusText(publication.estado_publicacion);
-                const fecha = formatDate(publication.fecha_publicacion);
-                const publicationId = publication.id_publicidad || publication.id;
-                const precio = publication.precio ? `$${parseFloat(publication.precio).toLocaleString()}` : 'No especificado';
-                const experiencia = publication.experiencia ? `${publication.experiencia} año${publication.experiencia > 1 ? 's' : ''}` : 'No especificada';
-                
-                publicationsHTML += `
-                    <div class="publication-card" id="publication-${publicationId}">
-                        <div class="publication-header">
-                            <div class="flex-grow-1">
-                                <div class="publication-title">${publication.titulo_publicidad || 'Sin título'}</div>
-                                <div class="text-muted small">Publicado el: ${fecha}</div>
-                            </div>
-                            <span class="publication-status ${statusClass}">${statusText}</span>
-                        </div>
-                        
-                        <p class="text-muted mb-2">${publication.descripcion_detallada || 'Sin descripción'}</p>
-                        
-                        <div class="publication-meta">
-                            <div class="meta-item">
-                                <span class="meta-icon">📍</span>
-                                <strong>Ubicación:</strong> ${publication.ubicacion || 'No especificada'}
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">🏷️</span>
-                                <strong>Categoría:</strong> ${getCategoryName(publication.id_categoria)}
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">⭐</span>
-                                <strong>Membresía:</strong> ${getMembershipName(publication.tipo_membresia_vinculada)}
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">💰</span>
-                                <strong>Precio:</strong> ${precio}
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-icon">📅</span>
-                                <strong>Experiencia:</strong> ${experiencia}
-                            </div>
-                        </div>
-                        
-                        <div class="publication-actions">
-                            <button class="btn btn-outline-primary btn-sm" onclick="openEditPublicationModal(${publicationId})">
-                                ✏️ Editar
-                            </button>
-                            <button class="btn btn-outline-danger btn-sm" onclick="confirmDeletePublication(${publicationId}, '${publication.titulo_publicidad}')">
-                                🗑️ Eliminar
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
+                function renderUserPublications() {
+                    const container = document.getElementById('publicationsContainer');
+                    
+                    if (!userPublications || userPublications.length === 0) {
+                        showNoPublications();
+                        return;
+                    }
 
-            container.innerHTML = publicationsHTML;
-        }
+                    let publicationsHTML = '';
+                    
+                    userPublications.forEach(publication => {
+                        const statusClass = getStatusClass(publication.estado_publicacion);
+                        const statusText = getStatusText(publication.estado_publicacion);
+                        const fecha = formatDate(publication.fecha_publicacion);
+                        const publicationId = publication.id_publicidad || publication.id;
+                        
+                        publicationsHTML += `
+                            <div class="publication-card" id="publication-${publicationId}">
+                                <div class="publication-header">
+                                    <div class="flex-grow-1">
+                                        <div class="publication-title">${publication.titulo_publicidad || 'Sin título'}</div>
+                                        <div class="text-muted small">Publicado el: ${fecha}</div>
+                                    </div>
+                                    <span class="publication-status ${statusClass}">${statusText}</span>
+                                </div>
+                                
+                                <p class="text-muted mb-2">${publication.descripcion_detallada || 'Sin descripción'}</p>
+                                
+                                <div class="publication-meta">
+                                    <div class="meta-item">
+                                        <span class="meta-icon">📍</span>
+                                        <strong>Ubicación:</strong> ${publication.ubicacion || 'No especificada'}
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-icon">🏷️</span>
+                                        <strong>Categoría:</strong> ${getCategoryName(publication.id_categoria)}
+                                    </div>
+                                </div>
+                                
+                                <div class="publication-actions">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="openEditPublicationModal(${publicationId})">
+                                        ✏️ Editar
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" onclick="confirmDeletePublication(${publicationId}, '${publication.titulo_publicidad}')">
+                                        🗑️ Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    container.innerHTML = publicationsHTML;
+                }
 
         // Forzar recarga de publicaciones
         async function forceReloadPublications() {
             console.log('🔄 Forzando recarga de publicaciones...');
             await loadUserPublications();
-        }
-
-        // Alternar modo depuración
-        function toggleDebug() {
-            const debugInfo = document.getElementById('debugInfo');
-            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
-            if (debugInfo.style.display === 'block') {
-                updateDebugInfo();
-            }
         }
 
         // Abrir modal de edición de publicación
@@ -895,21 +786,17 @@
 
             publicationToEdit = publication;
             
-            // Llenar el formulario con los datos actuales
+            // Obtener el teléfono del usuario desde localStorage
+            const userData = JSON.parse(localStorage.getItem('user_data') || '{}');
+            const userPhone = userData.telefono_contacto || '';
+            
+            // Llenar el formulario solo con los campos necesarios
             document.getElementById('editPubTitle').value = publication.titulo_publicidad || '';
             document.getElementById('editPubDescription').value = publication.descripcion_detallada || '';
             document.getElementById('editPubStatus').value = publication.estado_publicacion || 'activa';
             document.getElementById('editPubLocation').value = publication.ubicacion || '';
             document.getElementById('editPubCategory').value = publication.id_categoria || '';
-            
-            // Convertir el valor de membresía
-            const membershipValue = publication.tipo_membresia_vinculada;
-            document.getElementById('editPubMembership').value = typeof membershipValue === 'string' ? 
-                convertMembershipStringToNumber(membershipValue) : membershipValue;
-            
-            document.getElementById('editPubPrice').value = publication.precio || '';
-            document.getElementById('editPubContact').value = publication.contacto || '';
-            document.getElementById('editPubExperience').value = publication.experiencia || '';
+            document.getElementById('editPubContact').value = userPhone || 'Sin contacto registrado';
             
             editPublicationModal.show();
         }
@@ -930,92 +817,86 @@
         }
 
         // Guardar cambios de publicación
-        async function savePublicationChanges() {
-            if (!publicationToEdit) return;
+        // Guardar cambios de publicación
+            async function savePublicationChanges() {
+                if (!publicationToEdit) return;
 
-            const token = localStorage.getItem('access_token');
-            if (!token) {
-                alert('Error: No estás autenticado');
-                return;
-            }
-
-            // Obtener valores del formulario
-            const titulo_publicidad = document.getElementById('editPubTitle').value.trim();
-            const descripcion_detallada = document.getElementById('editPubDescription').value.trim();
-            const estado_publicacion = document.getElementById('editPubStatus').value;
-            const ubicacion = document.getElementById('editPubLocation').value.trim();
-            const id_categoria = document.getElementById('editPubCategory').value;
-            const tipo_membresia_vinculada = document.getElementById('editPubMembership').value;
-            const precio = document.getElementById('editPubPrice').value;
-            const contacto = document.getElementById('editPubContact').value.trim();
-            const experiencia = document.getElementById('editPubExperience').value;
-
-            // Validaciones básicas
-            if (!titulo_publicidad) {
-                alert('❌ El título es obligatorio');
-                return;
-            }
-
-            if (!descripcion_detallada) {
-                alert('❌ La descripción es obligatoria');
-                return;
-            }
-
-            try {
-                const publicationId = publicationToEdit.id_publicidad || publicationToEdit.id;
-                
-                const updatedPublication = {
-                    titulo_publicidad: titulo_publicidad,
-                    descripcion_detallada: descripcion_detallada,
-                    estado_publicacion: estado_publicacion,
-                    ubicacion: ubicacion,
-                    id_categoria: parseInt(id_categoria),
-                    tipo_membresia_vinculada: parseInt(tipo_membresia_vinculada),
-                    contacto: contacto,
-                    experiencia: experiencia ? parseInt(experiencia) : 0
-                };
-
-                // Solo agregar precio si tiene valor
-                if (precio && precio !== '') {
-                    updatedPublication.precio = parseFloat(precio);
+                const token = localStorage.getItem('access_token');
+                if (!token) {
+                    alert('Error: No estás autenticado');
+                    return;
                 }
 
-                const response = await fetch(`${BACKEND_URL}/api/publicidades/${publicationId}/`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updatedPublication)
-                });
+                // Obtener valores del formulario
+                const titulo_publicidad = document.getElementById('editPubTitle').value.trim();
+                const descripcion_detallada = document.getElementById('editPubDescription').value.trim();
+                const estado_publicacion = document.getElementById('editPubStatus').value;
+                const ubicacion = document.getElementById('editPubLocation').value.trim();
+                const id_categoria = document.getElementById('editPubCategory').value;
 
-                if (response.ok) {
-                    const updatedPub = await response.json();
+                // Validaciones básicas
+                if (!titulo_publicidad) {
+                    alert('❌ El título es obligatorio');
+                    return;
+                }
+
+                if (!descripcion_detallada) {
+                    alert('❌ La descripción es obligatoria');
+                    return;
+                }
+
+                if (!id_categoria) {
+                    alert('❌ La categoría es obligatoria');
+                    return;
+                }
+
+                try {
+                    const publicationId = publicationToEdit.id_publicidad || publicationToEdit.id;
                     
-                    // Actualizar en el array local
-                    const index = userPublications.findIndex(pub => {
-                        const pubId = pub.id_publicidad || pub.id;
-                        return pubId == publicationId;
+                    const updatedPublication = {
+                        titulo_publicidad: titulo_publicidad,
+                        descripcion_detallada: descripcion_detallada,
+                        estado_publicacion: estado_publicacion,
+                        ubicacion: ubicacion,
+                        id_categoria: parseInt(id_categoria)
+                    };
+
+                    const response = await fetch(`${BACKEND_URL}/api/publicidades/${publicationId}/`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(updatedPublication)
                     });
-                    
-                    if (index !== -1) {
-                        userPublications[index] = {...userPublications[index], ...updatedPub};
+
+                    if (response.ok) {
+                        const updatedPub = await response.json();
+                        
+                        // Actualizar en el array local
+                        const index = userPublications.findIndex(pub => {
+                            const pubId = pub.id_publicidad || pub.id;
+                            return pubId == publicationId;
+                        });
+                        
+                        if (index !== -1) {
+                            userPublications[index] = {...userPublications[index], ...updatedPub};
+                        }
+                        
+                        renderUserPublications();
+                        editPublicationModal.hide();
+                        document.getElementById('successMessage').textContent = 'Publicación actualizada correctamente.';
+                        successModal.show();
+                        
+                    } else {
+                        const errorData = await response.json();
+                        alert('❌ Error al guardar los cambios:\n' + (errorData.detail || errorData.error || 'Error desconocido'));
                     }
                     
-                    renderUserPublications();
-                    editPublicationModal.hide();
-                    document.getElementById('successMessage').textContent = 'Publicación actualizada correctamente.';
-                    successModal.show();
-                    
-                } else {
-                    const errorData = await response.json();
-                    alert('❌ Error al guardar los cambios:\n' + (errorData.detail || errorData.error || 'Error desconocido'));
+                } catch (error) {
+                    alert('❌ Error al guardar los cambios:\n' + error.message);
                 }
-                
-            } catch (error) {
-                alert('❌ Error al guardar los cambios:\n' + error.message);
             }
-        }
 
         // Obtener nombre legible de la categoría
         function getCategoryName(categoryValue) {

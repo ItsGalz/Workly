@@ -201,6 +201,57 @@
             gap: 5px;
             margin-top: 5px;
         }
+        .search-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        .search-input {
+            padding-left: 40px;
+            border-radius: 20px;
+            border: 1px solid #dee2e6;
+        }
+        .search-input:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+        }
+        .search-clear {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+        }
+        .search-clear:hover {
+            color: #2c3e50;
+        }
+        .search-results {
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .search-active {
+            border: 2px solid #3498db;
+        }
+        .search-hint {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -365,6 +416,27 @@
 
                 <!-- Main Content - Servicios -->
                 <div class="col-lg-9">
+                    <!-- Barra de búsqueda -->
+                    <div class="search-container" id="searchContainer">
+                        <div class="search-box">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" 
+                                   class="form-control search-input" 
+                                   id="searchInput" 
+                                   placeholder="🔍 Buscar servicios o usuarios..."
+                                   onkeyup="handleSearch(event)">
+                            <button class="search-clear" id="searchClearBtn" onclick="clearSearch()" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="search-hint" id="searchHint">
+                            <!-- Aquí se mostrará la categoría actual cuando haya búsqueda -->
+                        </div>
+                        <div class="search-results text-muted" id="searchResults" style="display: none;">
+                            <small id="searchResultsText"></small>
+                        </div>
+                    </div>
+
                     <!-- Contenido Público (siempre visible) -->
                     <div class="row" id="publicContent">
                         <div class="col-12">
@@ -475,6 +547,8 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Font Awesome para iconos -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 
     <script>
         // URLs CONFIGURADAS
@@ -494,9 +568,11 @@
         let categoriaSeleccionada = null;
         let currentRating = 0;
         let currentPublicidadId = null;
-        let currentRatingType = null; // 'talento' o 'empresa'
+        let currentRatingType = null;
+        let busquedaActiva = false;
+        let terminoBusqueda = '';
         
-        // Almacenamiento de calificaciones (simulado - en producción usarías una base de datos)
+        // Almacenamiento de calificaciones
         let calificacionesData = JSON.parse(localStorage.getItem('workly_calificaciones')) || {};
         let calificacionesEmpresasData = JSON.parse(localStorage.getItem('workly_calificaciones_empresas')) || {};
 
@@ -523,41 +599,26 @@
                 
                 renderHomeContent();
                 
-                // DEBUG: Mostrar información de categorías y publicidades
-                setTimeout(debugCategoriaPublicidad, 1000);
-                
             } catch (error) {
-                console.error('Error cargando datos iniciales:', error);
                 showError('Error al cargar los datos');
             }
         }
 
-        // Función para determinar si es Empresa o Talento - CORREGIDA
+        // Función para determinar si es Empresa o Talento
         function esEmpresa(publicidad) {
-            console.log('Analizando publicidad:', publicidad);
-            
-            // MÉTODO 1: Verificar si hay un campo específico de tipo
             if (publicidad.tipo_publicidad !== undefined) {
                 const tipo = publicidad.tipo_publicidad.toLowerCase();
-                console.log('Tipo de publicidad encontrado:', tipo);
                 return tipo.includes('empresa') || tipo.includes('servicio') || tipo.includes('company');
             }
             
-            // MÉTODO 2: Verificar si hay un campo de tipo_usuario
             if (publicidad.tipo_usuario !== undefined) {
                 const tipo = publicidad.tipo_usuario.toLowerCase();
-                console.log('Tipo de usuario encontrado:', tipo);
                 return tipo.includes('empresa') || tipo.includes('company');
             }
             
-            // MÉTODO 3: Analizar el título y descripción
             const titulo = publicidad.titulo_publicidad ? publicidad.titulo_publicidad.toLowerCase() : '';
             const descripcion = publicidad.descripcion_detallada ? publicidad.descripcion_detallada.toLowerCase() : '';
             
-            console.log('Título:', titulo);
-            console.log('Descripción:', descripcion);
-            
-            // Palabras clave para empresa (con más variaciones)
             const palabrasEmpresa = [
                 'empresa', 'servicio', 'compañía', 'company', 'business', 
                 'corporación', 'corporacion', 's.a.', 's.a', 'limitada', 
@@ -571,14 +632,13 @@
                 'refrigeración', 'refrigeracion', 'mecánica', 'mecanica',
                 'turismo', 'limpieza', 'repostería', 'reposteria',
                 'educación', 'educacion', 'cuidado', 'belleza',
-                'programación', 'programacion', 'diseño', 'diseño'
+                'programación', 'programacion', 'diseño'
             ];
             
-            // Palabras clave para talento
             const palabrasTalento = [
                 'talento', 'freelance', 'independiente', 'personal', 'profesional',
                 'individual', 'consultor', 'asesor', 'freelancer', 'autónomo',
-                'autonomo', 'persona', 'individual', 'experto', 'especialista',
+                'autonomo', 'persona', 'experto', 'especialista',
                 'developer', 'desarrollador', 'diseñador', 'diseñadora',
                 'programador', 'programadora', 'ingeniero', 'ingeniera',
                 'arquitecto', 'arquitecta', 'abogado', 'abogada',
@@ -587,48 +647,35 @@
                 'coach', 'mentor', 'tutor', 'instructor'
             ];
             
-            // Contar coincidencias
             let contadorEmpresa = 0;
             let contadorTalento = 0;
             
-            // Verificar palabras de empresa
             palabrasEmpresa.forEach(palabra => {
                 if (titulo.includes(palabra) || descripcion.includes(palabra)) {
                     contadorEmpresa++;
                 }
             });
             
-            // Verificar palabras de talento
             palabrasTalento.forEach(palabra => {
                 if (titulo.includes(palabra) || descripcion.includes(palabra)) {
                     contadorTalento++;
                 }
             });
             
-            console.log('Coincidencias empresa:', contadorEmpresa);
-            console.log('Coincidencias talento:', contadorTalento);
-            
-            // Decisión basada en coincidencias
             if (contadorEmpresa > contadorTalento) {
-                console.log('✅ Determinado como EMPRESA');
                 return true;
             } else if (contadorTalento > contadorEmpresa) {
-                console.log('✅ Determinado como TALENTO');
                 return false;
             }
             
-            // MÉTODO 4: Si hay igualdad, usar formato del título
             if (titulo.includes('talento:')) {
-                console.log('✅ Determinado como TALENTO (por formato de título)');
                 return false;
             }
             
             if (titulo.includes('empresa:') || titulo.includes('servicio:')) {
-                console.log('✅ Determinado como EMPRESA (por formato de título)');
                 return true;
             }
             
-            // MÉTODO 5: Si el ID de usuario está en los usuarios cargados, verificar su tipo
             let usuarioId = null;
             if (publicidad.id_usuario_id !== undefined && publicidad.id_usuario_id !== null) {
                 usuarioId = publicidad.id_usuario_id;
@@ -642,19 +689,14 @@
                 const usuario = usuariosData[usuarioId];
                 if (usuario.tipo_usuario) {
                     const tipo = usuario.tipo_usuario.toLowerCase();
-                    console.log('Tipo de usuario en datos:', tipo);
                     return tipo.includes('empresa');
                 }
             }
             
-            // MÉTODO 6: Por defecto, si tiene "servicio" o "empresa" en cualquier parte
             if (contadorEmpresa > 0) {
-                console.log('✅ Determinado como EMPRESA (por palabras clave)');
                 return true;
             }
             
-            // Por defecto, considerar como talento
-            console.log('⚠️ No se pudo determinar claramente, por defecto: TALENTO');
             return false;
         }
 
@@ -671,41 +713,20 @@
                 }
             });
             
-            console.log(`📊 Separación final: ${empresas.length} empresas, ${talentos.length} talentos`);
-            
-            // Log para depuración
-            if (empresas.length > 0) {
-                console.log('📋 Empresas encontradas:');
-                empresas.forEach(emp => {
-                    console.log(`  - ${emp.titulo_publicidad} (ID: ${emp.id_publicidad})`);
-                });
-            }
-            
-            if (talentos.length > 0) {
-                console.log('👥 Talentos encontrados:');
-                talentos.forEach(tal => {
-                    console.log(`  - ${tal.titulo_publicidad} (ID: ${tal.id_publicidad})`);
-                });
-            }
-            
             return { empresas, talentos };
         }
 
-        // Cargar categorías desde la API - VERSIÓN MEJORADA
+        // Cargar categorías desde la API
         async function loadCategorias() {
             try {
-                console.log('🔄 Cargando categorías...');
                 const response = await fetch(`${BACKEND_URL}/api/categorias/`);
                 
                 if (!response.ok) {
-                    console.error('❌ Error al cargar categorías:', response.status, response.statusText);
                     throw new Error(`Error al cargar categorías: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                console.log('📋 Respuesta cruda de categorías:', data);
                 
-                // Manejar diferentes formatos de respuesta
                 if (Array.isArray(data)) {
                     categoriasData = data;
                 } else if (data.results && Array.isArray(data.results)) {
@@ -713,8 +734,6 @@
                 } else if (data.data && Array.isArray(data.data)) {
                     categoriasData = data.data;
                 } else {
-                    console.warn('⚠️ Formato de categorías no reconocido, intentando extraer array');
-                    // Intentar encontrar un array en el objeto
                     for (const key in data) {
                         if (Array.isArray(data[key])) {
                             categoriasData = data[key];
@@ -723,18 +742,28 @@
                     }
                 }
                 
-                console.log(`✅ Categorías cargadas: ${categoriasData.length} categorías`);
-                console.log('📋 Lista de categorías:', categoriasData.map(c => ({
-                    id: c.id_categoria || c.id,
-                    nombre: c.nombre_categoria
-                })));
+                // Categorías de emergencia si hay error
+                if (categoriasData.length === 0) {
+                    categoriasData = [
+                        { id_categoria: 1, nombre_categoria: 'Electricidad' },
+                        { id_categoria: 2, nombre_categoria: 'Construcción' },
+                        { id_categoria: 3, nombre_categoria: 'Plomería' },
+                        { id_categoria: 4, nombre_categoria: 'Carpintería' },
+                        { id_categoria: 5, nombre_categoria: 'Refrigeración / Aire Acondicionado' },
+                        { id_categoria: 6, nombre_categoria: 'Mecánica automotriz' },
+                        { id_categoria: 7, nombre_categoria: 'Turismo / Guías / Hotelería' },
+                        { id_categoria: 8, nombre_categoria: 'Limpieza' },
+                        { id_categoria: 9, nombre_categoria: 'Repostería' },
+                        { id_categoria: 10, nombre_categoria: 'Tutorías / Educación' },
+                        { id_categoria: 11, nombre_categoria: 'Cuidado infantil / Adultos mayores' },
+                        { id_categoria: 12, nombre_categoria: 'Belleza' },
+                        { id_categoria: 13, nombre_categoria: 'Otros' }
+                    ];
+                }
                 
-                // Renderizar categorías en el sidebar
                 renderCategorias();
                 
             } catch (error) {
-                console.error('💥 Error cargando categorías:', error);
-                // Crear categorías de emergencia si hay error
                 categoriasData = [
                     { id_categoria: 1, nombre_categoria: 'Electricidad' },
                     { id_categoria: 2, nombre_categoria: 'Construcción' },
@@ -750,7 +779,6 @@
                     { id_categoria: 12, nombre_categoria: 'Belleza' },
                     { id_categoria: 13, nombre_categoria: 'Otros' }
                 ];
-                console.log('⚠️ Usando categorías de emergencia');
                 renderCategorias();
             }
         }
@@ -758,14 +786,11 @@
         // Cargar publicidades desde la API
         async function loadPublicidades() {
             try {
-                console.log('🔄 Cargando publicidades...');
                 const response = await fetch(`${BACKEND_URL}/api/publicidades/`);
                 if (!response.ok) throw new Error('Error al cargar publicidades');
                 
                 const data = await response.json();
-                console.log('📢 Datos de publicidades recibidos:', data);
                 
-                // Manejar diferentes formatos de respuesta
                 if (Array.isArray(data)) {
                     publicidadesData = data;
                 } else if (data.results && Array.isArray(data.results)) {
@@ -776,43 +801,23 @@
                     throw new Error('Formato de respuesta no reconocido');
                 }
                 
-                console.log(`✅ Publicidades cargadas: ${publicidadesData.length} publicidades`);
-                
-                // DEPURACIÓN: Verificar estructura de las primeras 3 publicidades
-                console.log('🔍 DEPURACIÓN - Estructura de publicidades:');
-                publicidadesData.slice(0, 3).forEach((pub, index) => {
-                    console.log(`📋 Publicidad ${index + 1}:`, {
-                        id: pub.id_publicidad || pub.id,
-                        titulo: pub.titulo_publicidad,
-                        id_categoria_id: pub.id_categoria_id,
-                        id_categoria: pub.id_categoria,
-                        categoria_id: pub.categoria_id,
-                        categoria: pub.categoria
-                    });
-                });
-                
             } catch (error) {
-                console.error('💥 Error cargando publicidades:', error);
                 throw error;
             }
         }
 
-        // Cargar usuarios desde la API - VERSIÓN MEJORADA
+        // Cargar usuarios desde la API
         async function loadUsuarios() {
             try {
-                console.log('🔄 Cargando usuarios...');
                 const response = await fetch(`${BACKEND_URL}/api/usuarios/`);
                 if (!response.ok) {
-                    console.log('⚠️ No se pudieron cargar usuarios, continuando sin ellos');
                     usuariosData = {};
                     return;
                 }
                 
                 const data = await response.json();
-                console.log('👥 Datos de usuarios recibidos:', data);
-                
-                // Manejar diferentes formatos de respuesta
                 let usuariosArray = [];
+                
                 if (Array.isArray(data)) {
                     usuariosArray = data;
                 } else if (data.results && Array.isArray(data.results)) {
@@ -820,8 +825,6 @@
                 } else if (data.data && Array.isArray(data.data)) {
                     usuariosArray = data.data;
                 } else {
-                    console.log('⚠️ Formato de usuarios no reconocido, intentando extraer array');
-                    // Intentar encontrar un array en el objeto
                     for (const key in data) {
                         if (Array.isArray(data[key])) {
                             usuariosArray = data[key];
@@ -830,7 +833,6 @@
                     }
                 }
                 
-                // Crear un objeto para fácil acceso por ID
                 usuariosData = {};
                 usuariosArray.forEach(usuario => {
                     const usuarioId = usuario.id_usuario || usuario.id || usuario.usuario_id;
@@ -839,85 +841,75 @@
                     }
                 });
                 
-                console.log(`✅ Usuarios cargados: ${Object.keys(usuariosData).length} usuarios`);
-                
             } catch (error) {
-                console.error('Error cargando usuarios:', error);
-                // Inicializar como objeto vacío
                 usuariosData = {};
             }
         }
 
-        // FUNCIÓN CORREGIDA: Función para obtener nombre de categoría por ID
+        // Función para obtener nombre de categoría por ID
         function getNombreCategoria(publicidad) {
-            console.log('🔍 Buscando categoría para publicidad:');
-            console.log('📋 ID Publicidad:', publicidad.id_publicidad || publicidad.id);
-            console.log('📋 Título:', publicidad.titulo_publicidad);
+            const camposPosibles = [
+                'id_categoria', 'id_categoria_id', 'categoria_id', 'categoria',
+                'idCategoria', 'categoriaId', 'category', 'category_id',
+                'categoryId', 'cat_id', 'cat', 'id_cat'
+            ];
             
-            // BUSCAR EL ID DE CATEGORÍA EN EL CAMPO CORRECTO (id_categoria)
             let categoriaId = null;
             
-            // PRIMERO: Buscar en id_categoria (el campo usado en publicarme.html)
-            if (publicidad.id_categoria !== undefined && publicidad.id_categoria !== null) {
-                categoriaId = publicidad.id_categoria;
-                console.log(`✅ Campo id_categoria encontrado: ${categoriaId}`);
-            }
-            // SEGUNDO: Si no, buscar en otros campos posibles
-            else if (publicidad.id_categoria_id !== undefined && publicidad.id_categoria_id !== null) {
-                categoriaId = publicidad.id_categoria_id;
-                console.log(`✅ Campo id_categoria_id encontrado: ${categoriaId}`);
-            }
-            else if (publicidad.categoria_id !== undefined && publicidad.categoria_id !== null) {
-                categoriaId = publicidad.categoria_id;
-                console.log(`✅ Campo categoria_id encontrado: ${categoriaId}`);
-            }
-            else if (publicidad.categoria !== undefined && publicidad.categoria !== null) {
-                categoriaId = publicidad.categoria;
-                console.log(`✅ Campo categoria encontrado: ${categoriaId}`);
+            for (const campo of camposPosibles) {
+                if (publicidad[campo] !== undefined && publicidad[campo] !== null) {
+                    if (typeof publicidad[campo] === 'object' && publicidad[campo] !== null) {
+                        const obj = publicidad[campo];
+                        if (obj.id_categoria !== undefined) {
+                            categoriaId = obj.id_categoria;
+                        } else if (obj.id !== undefined) {
+                            categoriaId = obj.id;
+                        } else if (obj.value !== undefined) {
+                            categoriaId = obj.value;
+                        }
+                    } else {
+                        categoriaId = publicidad[campo];
+                    }
+                    break;
+                }
             }
             
-            if (!categoriaId) {
-                console.log('❌ NO SE ENCONTRÓ ID DE CATEGORÍA');
-                console.log('📊 Campos disponibles:', Object.keys(publicidad));
+            if (categoriaId === null) {
                 return 'Sin categoría';
             }
             
-            // Convertir a número si es posible
-            const catIdNum = Number(categoriaId);
-            console.log(`🔍 Buscando categoría con ID: ${catIdNum} en ${categoriasData.length} categorías`);
+            let catIdNum;
+            if (typeof categoriaId === 'number') {
+                catIdNum = categoriaId;
+            } else if (typeof categoriaId === 'string' && !isNaN(parseInt(categoriaId))) {
+                catIdNum = parseInt(categoriaId);
+            } else {
+                return `Categoría ${categoriaId}`;
+            }
             
-            // BUSCAR EN LAS CATEGORÍAS DISPONIBLES
             const categoria = categoriasData.find(cat => {
-                // Extraer ID de diferentes formas posibles
                 const catId = cat.id_categoria || cat.id || cat.categoria_id;
-                return Number(catId) === catIdNum;
+                if (catId !== undefined && catId !== null) {
+                    const catIdNumComparar = Number(catId);
+                    return catIdNumComparar === catIdNum;
+                }
+                return false;
             });
             
             if (categoria) {
                 const nombre = categoria.nombre_categoria || categoria.nombre || `Categoría #${catIdNum}`;
-                console.log(`✅✅✅ Categoría ENCONTRADA: ${nombre} (ID: ${catIdNum})`);
                 return nombre;
             }
-            
-            console.log('❌❌❌ No se encontró categoría con ID:', catIdNum);
-            console.log('📋 Categorías disponibles:', categoriasData.map(c => ({
-                id_categoria: c.id_categoria,
-                id: c.id,
-                categoria_id: c.categoria_id,
-                nombre: c.nombre_categoria || c.nombre
-            })));
             
             return `Categoría #${catIdNum}`;
         }
 
-        // Función para obtener nombre de usuario por ID - VERSIÓN MEJORADA
+        // Función para obtener nombre de usuario por ID
         function getNombreUsuario(publicidad) {
-            // PRIMERO: Si viene el nombre de usuario directamente en la publicidad
             if (publicidad.usuario_nombre) {
                 return publicidad.usuario_nombre;
             }
             
-            // SEGUNDO: Buscar el ID de usuario en diferentes campos posibles
             let usuarioId = null;
             
             if (publicidad.id_usuario_id !== undefined && publicidad.id_usuario_id !== null) {
@@ -932,7 +924,6 @@
                 return 'Usuario desconocido';
             }
             
-            // Buscar en los usuarios cargados
             const usuario = usuariosData[usuarioId];
             if (usuario) {
                 const nombre = usuario.nombre_completo || usuario.correo_electronico || `Usuario ${usuarioId}`;
@@ -940,6 +931,34 @@
             } else {
                 return `Usuario ${usuarioId}`;
             }
+        }
+
+        // Función para obtener ID de categoría de una publicidad
+        function getCategoriaId(publicidad) {
+            const camposPosibles = [
+                'id_categoria', 'id_categoria_id', 'categoria_id', 'categoria',
+                'idCategoria', 'categoriaId', 'category', 'category_id',
+                'categoryId', 'cat_id', 'cat', 'id_cat'
+            ];
+            
+            for (const campo of camposPosibles) {
+                if (publicidad[campo] !== undefined && publicidad[campo] !== null) {
+                    if (typeof publicidad[campo] === 'object' && publicidad[campo] !== null) {
+                        const obj = publicidad[campo];
+                        if (obj.id_categoria !== undefined) {
+                            return obj.id_categoria;
+                        } else if (obj.id !== undefined) {
+                            return obj.id;
+                        } else if (obj.value !== undefined) {
+                            return obj.value;
+                        }
+                    } else {
+                        return publicidad[campo];
+                    }
+                }
+            }
+            
+            return null;
         }
 
         // Función para calcular promedio de calificaciones
@@ -1009,55 +1028,166 @@
             container.innerHTML = categoriasHTML;
         }
 
-        // FUNCIÓN CORREGIDA: Filtrar publicidades por categoría
+        // FUNCIÓN DE BÚSQUEDA MEJORADA - Respeta categoría seleccionada
+        function handleSearch(event) {
+            const searchTerm = event.target.value.trim().toLowerCase();
+            terminoBusqueda = searchTerm;
+            
+            if (searchTerm.length === 0) {
+                // Limpiar búsqueda
+                clearSearch();
+                return;
+            }
+            
+            // Mostrar botón de limpiar
+            document.getElementById('searchClearBtn').style.display = 'block';
+            document.getElementById('searchContainer').classList.add('search-active');
+            
+            // Obtener publicidades base según categoría seleccionada
+            let publicidadesBase = [];
+            
+            if (categoriaSeleccionada) {
+                // Filtrar solo las publicidades de la categoría seleccionada
+                const categoriaId = categoriaSeleccionada.id_categoria || categoriaSeleccionada.id;
+                publicidadesBase = publicidadesData.filter(publicidad => {
+                    const categoriaPubId = getCategoriaId(publicidad);
+                    return categoriaPubId !== null && Number(categoriaPubId) === Number(categoriaId);
+                });
+                
+                // Actualizar hint para mostrar que se busca dentro de la categoría
+                document.getElementById('searchHint').innerHTML = 
+                    `<i class="fas fa-filter"></i> Buscando dentro de: <strong>${categoriaSeleccionada.nombre_categoria}</strong>`;
+                document.getElementById('searchHint').style.display = 'block';
+            } else {
+                // Usar todas las publicidades
+                publicidadesBase = publicidadesData;
+                document.getElementById('searchHint').style.display = 'none';
+            }
+            
+            // Filtrar publicidades según término de búsqueda
+            const publicidadesFiltradas = publicidadesBase.filter(publicidad => {
+                // Buscar en título
+                const titulo = publicidad.titulo_publicidad ? publicidad.titulo_publicidad.toLowerCase() : '';
+                const tituloMatch = titulo.includes(searchTerm);
+                
+                // Buscar en nombre de usuario
+                const nombreUsuario = getNombreUsuario(publicidad).toLowerCase();
+                const usuarioMatch = nombreUsuario.includes(searchTerm);
+                
+                // Buscar en descripción
+                const descripcion = publicidad.descripcion_detallada ? publicidad.descripcion_detallada.toLowerCase() : '';
+                const descripcionMatch = descripcion.includes(searchTerm);
+                
+                return tituloMatch || usuarioMatch || descripcionMatch;
+            });
+            
+            // Separar en empresas y talentos
+            const { empresas, talentos } = separarEmpresasYTalentos(publicidadesFiltradas);
+            
+            // Actualizar UI
+            busquedaActiva = true;
+            
+            // Mostrar resultados de búsqueda
+            document.getElementById('searchResults').style.display = 'block';
+            const totalResultados = empresas.length + talentos.length;
+            
+            let textoResultados = `<strong>${totalResultados}</strong> resultados para "<strong>${searchTerm}</strong>"`;
+            if (categoriaSeleccionada) {
+                textoResultados += ` en <strong>${categoriaSeleccionada.nombre_categoria}</strong>`;
+            }
+            
+            document.getElementById('searchResultsText').innerHTML = textoResultados;
+            
+            // Renderizar resultados
+            renderSearchResults(empresas, talentos);
+        }
+
+        // Función para renderizar resultados de búsqueda
+        function renderSearchResults(empresas, talentos) {
+            // Actualizar contador
+            updateResultsCounter(empresas, talentos, categoriaSeleccionada);
+            
+            // Renderizar empresas
+            renderEmpresasFiltradas(empresas, categoriaSeleccionada);
+            
+            // Renderizar talentos
+            renderTalentosFiltrados(talentos, categoriaSeleccionada);
+        }
+
+        // Función para limpiar búsqueda
+        function clearSearch() {
+            busquedaActiva = false;
+            terminoBusqueda = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchClearBtn').style.display = 'none';
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('searchHint').style.display = 'none';
+            document.getElementById('searchContainer').classList.remove('search-active');
+            
+            // Volver al contenido original según la categoría seleccionada
+            if (categoriaSeleccionada) {
+                // Mantener la categoría seleccionada
+                filterByCategory(categoriaSeleccionada.id_categoria || categoriaSeleccionada.id);
+            } else {
+                renderHomeContent();
+            }
+        }
+
+        // Filtrar publicidades por categoría
         function filterByCategory(categoriaId) {
             if (!requireLogin()) return;
             
-            console.log(`🔍 Filtrando por categoría ID: ${categoriaId}`);
-            console.log('📋 Total de publicidades:', publicidadesData.length);
+            // Limpiar búsqueda si está activa
+            if (busquedaActiva) {
+                clearSearch();
+            }
             
-            // Encontrar la categoría seleccionada
             const categoria = categoriasData.find(cat => {
                 const catId = cat.id_categoria || cat.id;
                 return Number(catId) === Number(categoriaId);
             });
             
             if (!categoria) {
-                console.log('❌ Categoría no encontrada');
                 return;
             }
             
             categoriaSeleccionada = categoria;
             
-            // Actualizar UI de categorías
             updateCategoryUI(categoriaId);
             
-            // Filtrar publicidades por categoría - BUSCAR EN EL CAMPO CORRECTO id_categoria
-            const publicidadesFiltradas = publicidadesData.filter(publicidad => {
-                // Buscar el ID de categoría en el campo correcto id_categoria
-                const categoriaPublicidadId = publicidad.id_categoria;
+            function extraerCategoriaId(pub) {
+                const campos = ['id_categoria', 'id_categoria_id', 'categoria_id', 'categoria'];
                 
-                if (categoriaPublicidadId !== undefined && categoriaPublicidadId !== null) {
-                    console.log(`🔍 Publicidad ${publicidad.id_publicidad}: id_categoria = ${categoriaPublicidadId} (buscando ${categoriaId})`);
-                    return Number(categoriaPublicidadId) === Number(categoriaId);
+                for (const campo of campos) {
+                    if (pub[campo] !== undefined && pub[campo] !== null) {
+                        let valor = pub[campo];
+                        
+                        if (typeof valor === 'object' && valor !== null) {
+                            if (valor.id_categoria !== undefined) {
+                                return valor.id_categoria;
+                            } else if (valor.id !== undefined) {
+                                return valor.id;
+                            }
+                        }
+                        
+                        return valor;
+                    }
                 }
+                return null;
+            }
+            
+            const publicidadesFiltradas = publicidadesData.filter(publicidad => {
+                const categoriaPubId = extraerCategoriaId(publicidad);
                 
-                // Si no hay id_categoria, buscar en otros campos posibles
-                const altCategoriaId = publicidad.id_categoria_id || publicidad.categoria_id;
-                if (altCategoriaId !== undefined && altCategoriaId !== null) {
-                    console.log(`🔍 Publicidad ${publicidad.id_publicidad}: campo alternativo = ${altCategoriaId} (buscando ${categoriaId})`);
-                    return Number(altCategoriaId) === Number(categoriaId);
+                if (categoriaPubId !== null) {
+                    return Number(categoriaPubId) === Number(categoriaId);
                 }
                 
                 return false;
             });
             
-            console.log(`✅ Encontradas ${publicidadesFiltradas.length} publicidades para la categoría "${categoria.nombre_categoria}"`);
-            
-            // Separar en empresas y talentos
             const { empresas, talentos } = separarEmpresasYTalentos(publicidadesFiltradas);
             
-            // Renderizar contenido filtrado
             renderFilteredContent(empresas, talentos, categoria);
         }
 
@@ -1065,31 +1195,29 @@
         function showAllCategories() {
             if (!requireLogin()) return;
             
-            console.log('📂 Mostrando todas las categorías');
+            // Limpiar búsqueda si está activa
+            if (busquedaActiva) {
+                clearSearch();
+            }
             
             categoriaSeleccionada = null;
             
-            // Actualizar UI de categorías
             updateCategoryUI('all');
             
-            // Renderizar contenido completo
             renderHomeContent();
         }
 
         // Actualizar la UI de categorías
         function updateCategoryUI(categoriaIdSeleccionada) {
-            // Remover clase active de todas las categorías
             document.querySelectorAll('.category-filter').forEach(item => {
                 item.classList.remove('category-active');
             });
             
-            // Agregar clase active a la categoría seleccionada
             const categoriaSeleccionadaElement = document.querySelector(`[data-categoria-id="${categoriaIdSeleccionada}"]`);
             if (categoriaSeleccionadaElement) {
                 categoriaSeleccionadaElement.classList.add('category-active');
             }
             
-            // Mostrar/ocultar elementos de UI
             if (categoriaIdSeleccionada === 'all') {
                 document.getElementById('backToAllContainer').style.display = 'none';
                 document.getElementById('categoryTitleContainer').style.display = 'none';
@@ -1105,13 +1233,10 @@
 
         // Renderizar contenido filtrado
         function renderFilteredContent(empresas, talentos, categoria) {
-            // Actualizar contador
             updateResultsCounter(empresas, talentos, categoria);
             
-            // Mostrar empresas/servicios filtrados
             renderEmpresasFiltradas(empresas, categoria);
             
-            // Mostrar talentos filtrados
             renderTalentosFiltrados(talentos, categoria);
         }
 
@@ -1126,6 +1251,11 @@
             if (categoria) {
                 document.getElementById('categoryFilterText').style.display = 'inline';
                 document.getElementById('categoryName').textContent = categoria.nombre_categoria;
+            } else if (busquedaActiva) {
+                document.getElementById('categoryFilterText').style.display = 'inline';
+                document.getElementById('categoryName').textContent = `"${terminoBusqueda}"`;
+            } else {
+                document.getElementById('categoryFilterText').style.display = 'none';
             }
         }
 
@@ -1134,11 +1264,23 @@
             const container = document.getElementById('empresasContainer');
             
             if (empresas.length === 0) {
+                let mensaje = '🏢 No hay empresas disponibles';
+                let subtitulo = 'Intenta con otra búsqueda o categoría.';
+                
+                if (categoria && busquedaActiva) {
+                    mensaje = `🏢 No se encontraron empresas para "${terminoBusqueda}"`;
+                    subtitulo = `en la categoría "${categoria.nombre_categoria}"`;
+                } else if (categoria) {
+                    mensaje = `🏢 No hay empresas en la categoría "${categoria.nombre_categoria}"`;
+                } else if (busquedaActiva) {
+                    mensaje = `🏢 No se encontraron empresas para "${terminoBusqueda}"`;
+                }
+                
                 container.innerHTML = `
                     <div class="col-12">
                         <div class="no-results">
-                            <h5>🏢 No hay empresas en esta categoría</h5>
-                            <p class="text-muted">No se encontraron empresas de "${categoria.nombre_categoria}" disponibles.</p>
+                            <h5>${mensaje}</h5>
+                            <p class="text-muted">${subtitulo}</p>
                         </div>
                     </div>
                 `;
@@ -1200,11 +1342,23 @@
             const container = document.getElementById('talentosContainer');
             
             if (talentos.length === 0) {
+                let mensaje = '👥 No hay talentos disponibles';
+                let subtitulo = 'Intenta con otra búsqueda o categoría.';
+                
+                if (categoria && busquedaActiva) {
+                    mensaje = `👥 No se encontraron talentos para "${terminoBusqueda}"`;
+                    subtitulo = `en la categoría "${categoria.nombre_categoria}"`;
+                } else if (categoria) {
+                    mensaje = `👥 No hay talentos en la categoría "${categoria.nombre_categoria}"`;
+                } else if (busquedaActiva) {
+                    mensaje = `👥 No se encontraron talentos para "${terminoBusqueda}"`;
+                }
+                
                 container.innerHTML = `
                     <div class="col-12">
                         <div class="no-results">
-                            <h5>👥 No hay talentos en esta categoría</h5>
-                            <p class="text-muted">No se encontraron talentos de "${categoria.nombre_categoria}" disponibles.</p>
+                            <h5>${mensaje}</h5>
+                            <p class="text-muted">${subtitulo}</p>
                         </div>
                     </div>
                 `;
@@ -1257,10 +1411,8 @@
 
         // Renderizar contenido del home (todas las categorías)
         function renderHomeContent() {
-            // Separar en empresas y talentos
             const { empresas, talentos } = separarEmpresasYTalentos(publicidadesData);
             
-            // Actualizar contador
             updateResultsCounter(empresas, talentos, null);
             
             renderEmpresas(empresas);
@@ -1426,7 +1578,7 @@
             }
         }
 
-        // VERIFICACIÓN DE AUTENTICACIÓN MEJORADA
+        // VERIFICACIÓN DE AUTENTICACIÓN
         async function checkAuthentication() {
             const token = localStorage.getItem('access_token');
             
@@ -1436,7 +1588,6 @@
             }
 
             try {
-                // Usamos Promise.race para agregar un timeout
                 const response = await Promise.race([
                     fetch(`${BACKEND_URL}/auth/user-profile/`, {
                         method: 'GET',
@@ -1460,8 +1611,6 @@
                 }
                 
             } catch (error) {
-                console.error('Error verificando autenticación:', error);
-                // En caso de error, mostramos la UI pública
                 showPublicUI();
             }
         }
@@ -1474,9 +1623,7 @@
                 try {
                     const user = JSON.parse(userData);
                     userName = user.nombre_completo || user.correo_electronico || 'Usuario';
-                } catch (e) {
-                    console.error('Error parsing user data:', e);
-                }
+                } catch (e) {}
             }
             
             document.getElementById('userWelcome').textContent = `👋 Bienvenido, ${userName}`;
@@ -1535,7 +1682,19 @@
             const calificaciones = calificacionesEmpresasData[publicidadId] || [];
             const promedio = calcularPromedioCalificaciones(publicidadId, 'empresa');
             
-            // Generar contenido del modal
+            let contactoUsuario = 'No especificado';
+            let fechaPublicacion = 'No especificada';
+            
+            let usuarioId = publicidad.id_usuario_id || publicidad.id_usuario || publicidad.usuario_id;
+            
+            if (usuarioId && usuariosData[usuarioId]) {
+                const usuario = usuariosData[usuarioId];
+                contactoUsuario = usuario.telefono_contacto || usuario.telefono || usuario.celular || 
+                                 usuario.phone || usuario.phone_number || 'No especificado';
+            }
+            
+            fechaPublicacion = formatDate(publicidad.fecha_publicacion) || 'No especificada';
+            
             const modalContent = `
                 <div class="info-item">
                     <div class="info-label">Nombre del servicio</div>
@@ -1548,23 +1707,18 @@
                 </div>
                 
                 <div class="info-item">
-                    <div class="info-label">Tipo de Membresía</div>
-                    <div class="info-value">Básica</div>
-                </div>
-                
-                <div class="info-item">
                     <div class="info-label">Contacto</div>
-                    <div class="info-value">${publicidad.telefono_contacto || '+573001234567'}</div>
+                    <div class="info-value">${contactoUsuario}</div>
                 </div>
                 
                 <div class="info-item">
                     <div class="info-label">Ubicación</div>
-                    <div class="info-value">${publicidad.ubicacion || 'Ciudad o zona donde opera'}</div>
+                    <div class="info-value">${publicidad.ubicacion || 'No especificada'}</div>
                 </div>
                 
                 <div class="info-item">
-                    <div class="info-label">Años de experiencia</div>
-                    <div class="info-value">${publicidad.experiencia || 'Años de experiencia en el campo'}</div>
+                    <div class="info-label">Fecha de publicación</div>
+                    <div class="info-value">${fechaPublicacion}</div>
                 </div>
                 
                 <div class="info-item">
@@ -1602,11 +1756,9 @@
                 ` : ''}
             `;
             
-            // Actualizar el modal
             document.getElementById('empresaDetailsContent').innerHTML = modalContent;
             document.getElementById('empresaDetailsModalLabel').textContent = publicidad.titulo_publicidad;
             
-            // Mostrar el modal
             empresaDetailsModal.show();
         }
 
@@ -1625,7 +1777,19 @@
             const calificaciones = calificacionesData[publicidadId] || [];
             const promedio = calcularPromedioCalificaciones(publicidadId, 'talento');
             
-            // Generar contenido del modal
+            let contactoUsuario = 'No especificado';
+            let fechaPublicacion = 'No especificada';
+            
+            let usuarioId = publicidad.id_usuario_id || publicidad.id_usuario || publicidad.usuario_id;
+            
+            if (usuarioId && usuariosData[usuarioId]) {
+                const usuario = usuariosData[usuarioId];
+                contactoUsuario = usuario.telefono_contacto || usuario.telefono || usuario.celular || 
+                                 usuario.phone || usuario.phone_number || 'No especificado';
+            }
+            
+            fechaPublicacion = formatDate(publicidad.fecha_publicacion) || 'No especificada';
+            
             const modalContent = `
                 <div class="info-item">
                     <div class="info-label">Nombre del talento</div>
@@ -1638,28 +1802,23 @@
                 </div>
                 
                 <div class="info-item">
-                    <div class="info-label">Tipo de Membresía</div>
-                    <div class="info-value">Básica</div>
-                </div>
-                
-                <div class="info-item">
                     <div class="info-label">Contacto</div>
-                    <div class="info-value">${publicidad.telefono_contacto || '+573001234567'}</div>
+                    <div class="info-value">${contactoUsuario}</div>
                 </div>
                 
                 <div class="info-item">
                     <div class="info-label">Ubicación</div>
-                    <div class="info-value">${publicidad.ubicacion || 'Ciudad o zona donde trabajas'}</div>
+                    <div class="info-value">${publicidad.ubicacion || 'No especificada'}</div>
                 </div>
                 
                 <div class="info-item">
-                    <div class="info-label">Años de experiencia</div>
-                    <div class="info-value">${publicidad.experiencia || 'Años de experiencia en el campo'}</div>
+                    <div class="info-label">Fecha de publicación</div>
+                    <div class="info-value">${fechaPublicacion}</div>
                 </div>
                 
                 <div class="info-item">
                     <div class="info-label">Descripción</div>
-                    <div class="info-value">${publicidad.descripcion_detallada || 'ingeniero en software promedio'}</div>
+                    <div class="info-value">${publicidad.descripcion_detallada || 'Profesional de calidad'}</div>
                 </div>
                 
                 ${promedio > 0 ? `
@@ -1692,11 +1851,9 @@
                 ` : ''}
             `;
             
-            // Actualizar el modal
             document.getElementById('talentoDetailsContent').innerHTML = modalContent;
             document.getElementById('talentoDetailsModalLabel').textContent = publicidad.titulo_publicidad;
             
-            // Mostrar el modal
             talentoDetailsModal.show();
         }
 
@@ -1714,7 +1871,6 @@
             currentRating = 0;
             currentRatingType = 'empresa';
             
-            // Generar contenido del modal
             const modalContent = `
                 <div class="text-center">
                     <h6>Calificar a: ${publicidad.titulo_publicidad}</h6>
@@ -1732,14 +1888,11 @@
                 </div>
             `;
             
-            // Actualizar el modal
             document.getElementById('ratingEmpresaContent').innerHTML = modalContent;
             document.getElementById('ratingEmpresaModalLabel').textContent = `Calificar: ${publicidad.titulo_publicidad}`;
             
-            // Configurar el sistema de calificación
             setupRatingSystem();
             
-            // Configurar el botón de confirmación
             document.getElementById('confirmEmpresaRatingBtn').onclick = function() {
                 if (currentRating === 0) {
                     showError('Por favor selecciona una calificación');
@@ -1748,7 +1901,6 @@
                 guardarCalificacion();
             };
             
-            // Mostrar el modal
             ratingEmpresaModal.show();
         }
 
@@ -1766,7 +1918,6 @@
             currentRating = 0;
             currentRatingType = 'talento';
             
-            // Generar contenido del modal
             const modalContent = `
                 <div class="text-center">
                     <h6>Calificar a: ${publicidad.titulo_publicidad}</h6>
@@ -1784,14 +1935,11 @@
                 </div>
             `;
             
-            // Actualizar el modal
             document.getElementById('ratingContent').innerHTML = modalContent;
             document.getElementById('ratingModalLabel').textContent = `Calificar: ${publicidad.titulo_publicidad}`;
             
-            // Configurar el sistema de calificación
             setupRatingSystem();
             
-            // Configurar el botón de confirmación
             document.getElementById('confirmRatingBtn').onclick = function() {
                 if (currentRating === 0) {
                     showError('Por favor selecciona una calificación');
@@ -1800,7 +1948,6 @@
                 guardarCalificacion();
             };
             
-            // Mostrar el modal
             ratingModal.show();
         }
 
@@ -1814,7 +1961,6 @@
                     const rating = parseInt(this.getAttribute('data-rating'));
                     currentRating = rating;
                     
-                    // Actualizar estrellas
                     stars.forEach((s, index) => {
                         if (index < rating) {
                             s.textContent = '★';
@@ -1825,12 +1971,10 @@
                         }
                     });
                     
-                    // Actualizar texto
                     ratingValue.textContent = `Has seleccionado ${rating} estrella${rating > 1 ? 's' : ''}`;
                     ratingValue.style.color = '#495057';
                 });
                 
-                // Efecto hover
                 star.addEventListener('mouseover', function() {
                     const hoverRating = parseInt(this.getAttribute('data-rating'));
                     
@@ -1857,7 +2001,6 @@
 
         // Función para guardar calificación
         function guardarCalificacion() {
-            // Obtener información del usuario actual
             const userData = localStorage.getItem('user_data');
             let userName = 'Usuario Anónimo';
             
@@ -1865,48 +2008,36 @@
                 try {
                     const user = JSON.parse(userData);
                     userName = user.nombre_completo || user.correo_electronico || 'Usuario';
-                } catch (e) {
-                    console.error('Error parsing user data:', e);
-                }
+                } catch (e) {}
             }
             
-            // Crear objeto de calificación
             const nuevaCalificacion = {
                 rating: currentRating,
                 usuario: userName,
                 fecha: new Date().toLocaleDateString('es-ES')
             };
             
-            // Determinar qué conjunto de datos usar
             const calificacionesTarget = currentRatingType === 'empresa' 
                 ? calificacionesEmpresasData 
                 : calificacionesData;
             
-            // Inicializar array si no existe
             if (!calificacionesTarget[currentPublicidadId]) {
                 calificacionesTarget[currentPublicidadId] = [];
             }
             
-            // Verificar si el usuario ya calificó
             const calificacionExistenteIndex = calificacionesTarget[currentPublicidadId].findIndex(
                 cal => cal.usuario === userName
             );
             
             if (calificacionExistenteIndex !== -1) {
-                // Actualizar calificación existente
                 calificacionesTarget[currentPublicidadId][calificacionExistenteIndex] = nuevaCalificacion;
             } else {
-                // Agregar nueva calificación
                 calificacionesTarget[currentPublicidadId].push(nuevaCalificacion);
             }
             
-            // Guardar en localStorage (en producción sería en la base de datos)
             localStorage.setItem('workly_calificaciones', JSON.stringify(calificacionesData));
             localStorage.setItem('workly_calificaciones_empresas', JSON.stringify(calificacionesEmpresasData));
             
-            console.log(`✅ Calificación guardada: ${currentRating} estrellas por ${userName} para ${currentRatingType} ${currentPublicidadId}`);
-            
-            // Cerrar modal y mostrar mensaje de éxito
             if (currentRatingType === 'empresa') {
                 ratingEmpresaModal.hide();
             } else {
@@ -1915,12 +2046,17 @@
             
             showSuccess('¡Calificación guardada exitosamente!');
             
-            // Actualizar la vista
-            renderHomeContent();
+            // Refrescar la vista actual
+            if (busquedaActiva) {
+                handleSearch({target: {value: terminoBusqueda}});
+            } else if (categoriaSeleccionada) {
+                filterByCategory(categoriaSeleccionada.id_categoria || categoriaSeleccionada.id);
+            } else {
+                renderHomeContent();
+            }
         }
 
         function showSuccess(message) {
-            // Crear alerta temporal
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
             alertDiv.style.top = '20px';
@@ -1932,7 +2068,6 @@
             `;
             document.body.appendChild(alertDiv);
             
-            // Remover después de 3 segundos
             setTimeout(() => {
                 if (alertDiv.parentNode) {
                     alertDiv.parentNode.removeChild(alertDiv);
@@ -1959,36 +2094,6 @@
 
         function showError(message) {
             alert(`❌ Error: ${message}`);
-        }
-        
-        // Función de depuración para verificar la estructura de los datos
-        function debugCategoriaPublicidad() {
-            console.log('=== DEBUG CATEGORÍAS-PUBLICIDADES ===');
-            console.log(`📊 Total categorías: ${categoriasData.length}`);
-            console.log(`📊 Total publicidades: ${publicidadesData.length}`);
-            
-            // Mostrar todas las categorías
-            console.log('\n📋 CATEGORÍAS DISPONIBLES:');
-            categoriasData.forEach((cat, i) => {
-                const catId = cat.id_categoria || cat.id;
-                console.log(`${i+1}. ID: ${catId} - "${cat.nombre_categoria || cat.nombre}"`);
-            });
-            
-            // Mostrar publicidades y sus categorías
-            console.log('\n🔍 PUBLICIDADES Y SUS CATEGORÍAS:');
-            publicidadesData.forEach((pub, i) => {
-                console.log(`\nPublicidad ${i+1}: "${pub.titulo_publicidad}"`);
-                console.log(`  - ID: ${pub.id_publicidad}`);
-                
-                // Mostrar todos los campos relacionados con categoría
-                for (let key in pub) {
-                    if (key.toLowerCase().includes('categoria') || key === 'id_categoria' || key === 'categoria_id') {
-                        console.log(`  - ${key}: ${pub[key]} (tipo: ${typeof pub[key]})`);
-                    }
-                }
-                
-                console.log(`  - Función getNombreCategoria(): "${getNombreCategoria(pub)}"`);
-            });
         }
     </script>
 </body>
